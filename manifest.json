@@ -1,0 +1,10 @@
+{
+  "name": "Comment Control For Youtube",
+  "version": "1.0.0",
+  "description": "This extension filters out negative comments from the YouTube comments section so you only see the good stuff",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "Comment Control For Youtube"
+  }
+}
