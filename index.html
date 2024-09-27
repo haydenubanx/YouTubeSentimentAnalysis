@@ -2,50 +2,73 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Comment Control For Youtube</title>
-</head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comment Analysis For Youtube</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://unpkg.com/compromise@13.11.1/builds/compromise.min.js"></script></head>
 <body>
 
-<script src="https://apis.google.com/js/api.js"></script>
-<script>
-    /**
-     * Sample JavaScript code for youtube.commentThreads.list
-     * See instructions for running APIs Explorer code samples locally:
-     * https://developers.google.com/explorer-help/code-samples#javascript
-     */
+<!--<script src="https://apis.google.com/js/api.js"></script>-->
+<!--<script>-->
+<!--    /**-->
+<!--     * Sample JavaScript code for YouTube.commentThreads.list-->
+<!--     * See instructions for running APIs Explorer code samples locally:-->
+<!--     * https://developers.google.com/explorer-help/code-samples#javascript-->
+<!--     */-->
 
-    function loadClient() {
-        gapi.client.setApiKey("AIzaSyBav8jQwmVNxRFk4Q2FcviOHnUwbJjM8cU");
-        return gapi.client.load("https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest")
-            .then(function () {
-                    console.log("GAPI client loaded for API");
-                },
-                function (err) {
-                    console.error("Error loading GAPI client for API", err);
-                });
-    }
+<!--    function loadClient() {-->
+<!--        gapi.client.setApiKey("AIzaSyBav8jQwmVNxRFk4Q2FcviOHnUwbJjM8cU");-->
+<!--        return gapi.client.load("https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest")-->
+<!--            .then(function () {-->
+<!--                    console.log("GAPI client loaded for API");-->
+<!--                },-->
+<!--                function (err) {-->
+<!--                    console.error("Error loading GAPI client for API", err);-->
+<!--                });-->
+<!--    }-->
 
-    // Make sure the client is loaded before calling this method.
-    function execute() {
-        return gapi.client.youtube.commentThreads.list({
-            "part": [
-                "snippet,replies"
-            ],
-            "videoId": "_VB39Jo8mAQ"
-        })
-            .then(function (response) {
-                    // Handle the results here (response.result has the parsed body).
-                    console.log("Response", response);
-                },
-                function (err) {
-                    console.error("Execute error", err);
-                });
-    }
+<!--    // Make sure the client is loaded before calling this method.-->
+<!--    function execute() {-->
+<!--        return gapi.client.youtube.commentThreads.list({-->
+<!--            "part": [-->
+<!--                "snippet,replies"-->
+<!--            ],-->
+<!--            "videoId": "_VB39Jo8mAQ"-->
+<!--        })-->
+<!--            .then(function (response) {-->
+<!--                    // Handle the results here (response.result has the parsed body).-->
+<!--                    console.log("Response", response);-->
+<!--                },-->
+<!--                function (err) {-->
+<!--                    console.error("Execute error", err);-->
+<!--                });-->
+<!--    }-->
 
-    gapi.load("client");
-</script>
-<button onclick="loadClient()">load</button>
-<button onclick="execute()">execute</button>
+<!--    gapi.load("client");-->
+<!--</script>-->
+<!--<button onclick="loadClient()">load</button>-->
+<!--<button onclick="execute()">execute</button>-->
+
+<div>
+    <h1>Youtube Comments</h1>
+
+    <ul id="commentsContainer">
+
+        <li id="comments"></li>
+    </ul>
+</div>
 
 </body>
+<script src="scripts/sentimentAnalysis.js">
+
+
+
+
+</script>
+<script src="scripts/youtubeApiClients.js">
+
+        fetchYoutubeCommentsVideoId("_VB39Jo8mAQ")
+</script>
 </html>
