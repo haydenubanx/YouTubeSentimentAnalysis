@@ -1,10 +1,10 @@
 {
-  "name": "Comment Control For Youtube",
+  "name": "Comment Sentiment Analysis For Youtube",
   "version": "1.0.0",
-  "description": "This extension filters out negative comments from the YouTube comments section so you only see the good stuff",
+  "description": "This extension performs sentiment analysis on youtube comments to give you a quick summary of how users feel",
   "manifest_version": 3,
   "action": {
     "default_popup": "index.html",
-    "default_title": "Comment Control For Youtube"
+    "default_title": "Comment Sentiment Analysis For Youtube"
   }
 }

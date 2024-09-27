@@ -8,5 +8,12 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="PapaParse" level="application" />
+    <orderEntry type="library" name="compromise" level="application" />
+    <orderEntry type="library" name="@tensorflow" level="application" />
+    <orderEntry type="library" name="@xenova" level="application" />
+    <orderEntry type="library" name="sentiment" level="application" />
+    <orderEntry type="library" name="@tensorflow/tfjs" level="application" />
+    <orderEntry type="library" name="sentiment-analysis" level="application" />
   </component>
 </module>
