@@ -144,7 +144,14 @@
     <p id="loading-message">Loading comments...</p>
 
     <ul id="commentsContainer" style="display:none">
-        <!-- Comments will be injected here by JS -->
+        <!-- Invisible comment to maintain consistent width -->
+        <li id="invisible-comment" style="visibility:hidden;">
+            <p class="comment-text">Invisible Comment</p>
+            <p class="comment-sentiment">Sentiment: Neutral</p>
+            <p class="comment-probability">Probability: 0%</p>
+            <p class="comment-likes">👍 Likes: 0</p>
+        </li>
+        <!-- Actual comments will be injected here by JS -->
     </ul>
 </div>
 
