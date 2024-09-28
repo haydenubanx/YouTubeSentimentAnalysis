@@ -112,20 +112,21 @@ function vectorizeText(text, label) {
 
     words.forEach(word => {
         if (label === 1) {
-            // If the word is already in the positive list, increase its weight moderately
-            positiveWords[word] = (positiveWords[word] || 1.0) + 0.7; // Increased weight for positive words
+            // Make positive words have an equal or slightly larger weight
+            positiveWords[word] = (positiveWords[word] || 1.0) + 1.25; // Adjusted to 1.0 for balance
         } else if (label === 0) {
-            // If the word is in the negative list, increase its weight significantly
-            negativeWords[word] = (negativeWords[word] || 1.0) + 1.5; // Stronger impact for negative words
+            // Reduce the impact of negative words to make it less biased
+            negativeWords[word] = (negativeWords[word] || 1.0) + 0.7; // Adjusted to 1.0 for balance
         } else {
-            // Neutral words get a very small weight increase
-            neutralWords[word] = (neutralWords[word] || 1.0) + 0.3; // Minimal weight for neutral words
+            // Slight increase for neutral words
+            neutralWords[word] = (neutralWords[word] || 1.0) + 0.5; // Small neutral boost
         }
     });
 }
 
 function analyzeSentiments(commentsArray) {
     let totalSentimentScore = 0;
+    let totalSentimentProbability = 0;
     let sentimentCount = 0;
     let positiveCount = 0;
     let negativeCount = 0;
@@ -140,7 +141,7 @@ function analyzeSentiments(commentsArray) {
 
         // Weight the sentiment score by 1 + logarithmic likes, but with a damping factor
         // const weightedSentimentScore = sentimentScore * (1 + 0.3 * Math.log1p(likeCount));
-        const weightedSentimentScore = sentimentScore ;
+        const weightedSentimentScore = sentimentScore * (1 + 0.15 * likeCount);
 
         // Apply sigmoid to sentiment score for smoother probability mapping
         const sentimentProbability = sigmoid(weightedSentimentScore);
@@ -149,10 +150,10 @@ function analyzeSentiments(commentsArray) {
         let commentSentiment = 'Neutral';
         if (weightedSentimentScore > 0.5) {
             commentSentiment = 'Positive';
-            positiveCount++;
+            positiveCount+=(1 + likeCount);
         } else if (weightedSentimentScore < -0.5) {
             commentSentiment = 'Negative';
-            negativeCount++;
+            negativeCount+=(1 + likeCount);
         }
 
         individualCommentData.push({
@@ -162,18 +163,22 @@ function analyzeSentiments(commentsArray) {
             probability: sentimentProbability
         });
 
-        totalSentimentScore += weightedSentimentScore;
-        sentimentCount += (1 + likeCount);
+        totalSentimentProbability += sentimentProbability * (1 + 0.15 * likeCount);
+        sentimentCount += (1 + 0.15 * likeCount);
     });
 
-    const averageSentimentScore = totalSentimentScore / sentimentCount;
-    const overallSentimentProbability = sigmoid(averageSentimentScore);
+    const averageSentimentProbability = (totalSentimentProbability / sentimentCount);
+    const overallSentimentProbability = sigmoid(averageSentimentProbability);
 
     let overallSentiment = 'Neutral';
-    if (averageSentimentScore > 0.5) {
+    if (averageSentimentProbability > 0.8) {
+        overallSentiment = 'Overwhelmingly Positive';
+    }else if (averageSentimentProbability > 0.5) {
         overallSentiment = 'Positive';
-    } else if (averageSentimentScore < -0.5) {
+    } else if (averageSentimentProbability < -0.5 && averageSentimentProbability > -0.2) {
         overallSentiment = 'Negative';
+    } else if (averageSentimentProbability < -0.2) {
+        overallSentiment = 'Overwhelmingly Negative';
     }
 
     const totalPosNegComments = positiveCount + negativeCount;
@@ -192,39 +197,47 @@ function analyzeSentiments(commentsArray) {
 
 function calculateSentimentScore(commentText) {
     let score = 0;
-    const emojiRegex = /[\u{1F600}-\u{1F64F}|\u{1F300}-\u{1F5FF}|\u{1F680}-\u{1F6FF}|\u{1F700}-\u{1F77F}|\u{1F780}-\u{1F7FF}|\u{1F800}-\u{1F8FF}|\u{1F900}-\u{1F9FF}|\u{1FA00}-\u{1FAFF}|\u{2600}-\u{26FF}|\u{2700}-\u{27BF}|\u{1F1E0}-\u{1F1FF}]/gu;
+    const negationWords = ["not", "never", "no", "none"];
+    const emojiRegex = /[\u{1F600}-\u{1F64F}|\u{1F300}-\u{1F5FF}|\u{1F680}-\u{1F6FF}]/gu;
+    let negate = false; // Track if negation should be applied
 
-    // First, split the text into words and filter out numbers
-    const words = commentText.split(/\W+/).filter(word => isNaN(word)); // Exclude numbers
-    const emojis = commentText.match(emojiRegex) || []; // Extract emojis using regex
+    // Remove numbers from the comment text
+    commentText = commentText.replace(/\d+/g, '');
+    const words = commentText.split(/\W+/).filter(word => isNaN(word));
+    const emojis = commentText.match(emojiRegex) || [];
     const totalWords = words.length + emojis.length;
 
-    // If no words or emojis remain, treat as neutral
     if (totalWords === 0) {
-        return 0; // Neutral score
+        return 0;
     }
 
-    // Calculate sentiment score for non-numeric words
-    words.forEach(word => {
+    words.forEach((word, index) => {
         word = word.toLowerCase();
+
+        if (negationWords.includes(word)) {
+            negate = true; // Negate the following words
+            return; // Skip negation words from sentiment
+        }
+
         if (positiveWords[word]) {
-            score += Math.min(positiveWords[word], 2); // Cap the max contribution of positive words
+            score += negate ? Math.min(-positiveWords[word], 2) : Math.min(positiveWords[word], 2);
         } else if (negativeWords[word]) {
-            score -= negativeWords[word] * 2; // Amplify negative words' impact
+            score += negate ? Math.min(negativeWords[word], 1.5) : Math.min(-negativeWords[word], 1.5);
         } else if (neutralWords[word]) {
-            // Neutral words contribute zero to the score
             score += 0;
         }
+
+        negate = false; // Reset after each word
     });
 
-    // Calculate sentiment score for emojis
+    // Boost emoji impact if emojis dominate the comment
+    const emojiBoostFactor = emojis.length > words.length ? 1.5 : 1.0;
     emojis.forEach(emoji => {
         if (emojiSentiment[emoji]) {
-            score += emojiSentiment[emoji]; // Add emoji sentiment score
+            score += emojiSentiment[emoji] * emojiBoostFactor;
         }
     });
 
-    // Normalize score by total words + emojis to avoid skew
     return totalWords > 0 ? score / totalWords : 0;
 }
 
