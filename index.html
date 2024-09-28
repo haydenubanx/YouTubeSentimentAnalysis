@@ -4,56 +4,19 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comment Analysis For Youtube</title>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-
+    <title>Comment Analysis For YouTube</title>
+</head>
 <body>
-
 <div>
-    <h1>Youtube Comments</h1>
-
+    <h1>YouTube Comments</h1>
     <ul id="commentsContainer">
-
         <li id="comments"></li>
     </ul>
 </div>
 
+<!-- Link to the external JS file -->
+<script src="scripts/papaparse.min.js" defer></script>
+<script src="scripts/sentimentAnalysis.js" defer></script>
+<script src="scripts/contentScript.js" defer></script>
 </body>
-<script>
-    // Function to extract video ID from YouTube URL
-    function getYoutubeVideoId() {
-        const url = window.location.href;
-        let videoId = null;
-
-        // Check if the URL contains the 'v' parameter (standard YouTube link)
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('v')) {
-            videoId = urlParams.get('v');  // Get the 'v' parameter value
-        } else if (url.includes('youtu.be')) {
-            // Check for shortened YouTube link (youtu.be)
-            const match = url.match(/youtu\.be\/([^?&\/]+)/);
-            if (match) {
-                videoId = match[1]; // Extract video ID
-            }
-        }
-
-        return videoId;
-    }
-
-    // Get the video ID dynamically from the URL
-    const videoId = getYoutubeVideoId();
-
-    if (videoId) {
-        // Call the function with the extracted video ID
-        fetchYoutubeCommentsVideoId(videoId);
-    } else {
-        console.error("No valid YouTube video ID found in the URL.");
-    }
-</script>
-
-<!--<script src="scripts/sentimentAnalysis.js">-->
-<!--    fetchYoutubeCommentsVideoId("_VB39Jo8mAQ");-->
-
-<!--</script>-->
 </html>

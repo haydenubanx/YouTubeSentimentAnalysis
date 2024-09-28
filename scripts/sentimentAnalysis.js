@@ -313,7 +313,30 @@ function sigmoid(x) {
     return 1 / (1 + Math.exp(-x)); // A smooth curve that maps sentiment to a range of 0 to 1
 }
 
-// Train the word lists from the CSV training data first, then fetch YouTube comments
-getTrainingDataFromCsv('trainingData/trainingData.csv').then(() => {
-    fetchYoutubeCommentsVideoId("B8Ihv3xsWYs");
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Your logic to modify the DOM here
+    const commentsList = document.getElementById('commentsContainer');
+    if (commentsList) {
+        // Modify innerHTML or other properties here
+    } else {
+        console.error('commentsContainer not found');
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Request the current video ID from the background script
+    chrome.runtime.sendMessage({ action: 'getVideoId' }, (response) => {
+        const videoId = response.videoId;
+        if (videoId) {
+            // Trigger the sentiment analysis using the retrieved video ID
+            getTrainingDataFromCsv(chrome.runtime.getURL('trainingData/trainingData.csv')).then(() => {
+                fetchYoutubeCommentsVideoId(videoId);
+            }).catch(error => {
+                console.error('Error fetching CSV file:', error);
+            });
+        } else {
+            console.error('No video ID found in the response.');
+        }
+    });
 });

@@ -6,5 +6,33 @@
   "action": {
     "default_popup": "index.html",
     "default_title": "Comment Sentiment Analysis For Youtube"
-  }
+  },
+  "host_permissions": [
+    "https://www.youtube.com/*",
+    "https://youtube.googleapis.com/*"
+  ],
+  "permissions": [
+    "tabs",
+    "activeTab",
+    "scripting"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "js": [
+        "scripts/sentimentAnalysis.js",
+        "contentScript.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["trainingData/trainingData.csv", "scripts/sentimentAnalysis.js", "scripts/papaparse.min.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }
