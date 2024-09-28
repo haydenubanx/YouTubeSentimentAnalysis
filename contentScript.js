@@ -41,6 +41,12 @@ let allCommentsData = []; // Global variable to store all comments after sentime
 // Function to display comments based on sentiment
 function displayFilteredComments(comments) {
     const commentsContainer = document.getElementById('commentsContainer');
+    const loadingMessage = document.getElementById('loading-message');
+
+    // Hide the loading message and show the comments container
+    loadingMessage.style.display = 'none';
+    commentsContainer.style.display = 'block';
+
     commentsContainer.innerHTML = ''; // Clear existing comments
 
     comments.forEach(commentData => {
@@ -85,6 +91,13 @@ function filterComments(filter) {
 
 // Fetch YouTube comments, analyze them, and display sentiment
 async function fetchYoutubeCommentsVideoId(inputVideoId) {
+    const commentsContainer = document.getElementById('commentsContainer');
+    const loadingMessage = document.getElementById('loading-message');
+
+    // Ensure the loading message is visible and the container is hidden initially
+    loadingMessage.style.display = 'block';
+    commentsContainer.style.display = 'none';
+
     const options = {
         method: 'GET',
         headers: {

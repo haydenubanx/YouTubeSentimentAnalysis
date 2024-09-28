@@ -101,6 +101,13 @@
             color: #c0c0c0; /* Light grey for smaller text */
         }
 
+        /* Loading message style */
+        #loading-message {
+            text-align: center;
+            font-size: 18px;
+            color: #ffa500; /* Orange text for loading message */
+        }
+
         /* Responsive styling */
         @media (max-width: 768px) {
             body {
@@ -133,7 +140,10 @@
         <button class="btn" id="filter-negative">Negative</button>
     </div>
 
-    <ul id="commentsContainer">
+    <!-- Loading message -->
+    <p id="loading-message">Loading comments...</p>
+
+    <ul id="commentsContainer" style="display:none">
         <!-- Comments will be injected here by JS -->
     </ul>
 </div>
