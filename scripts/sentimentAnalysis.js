@@ -139,7 +139,8 @@ function analyzeSentiments(commentsArray) {
         const sentimentScore = calculateSentimentScore(topLevelComment);
 
         // Weight the sentiment score by 1 + logarithmic likes, but with a damping factor
-        const weightedSentimentScore = sentimentScore * (1 + 0.3 * Math.log1p(likeCount));
+        // const weightedSentimentScore = sentimentScore * (1 + 0.3 * Math.log1p(likeCount));
+        const weightedSentimentScore = sentimentScore ;
 
         // Apply sigmoid to sentiment score for smoother probability mapping
         const sentimentProbability = sigmoid(weightedSentimentScore);
