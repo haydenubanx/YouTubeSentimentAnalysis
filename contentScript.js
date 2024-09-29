@@ -1,3 +1,39 @@
+// Function to inject sentiment score into the YouTube DOM
+function injectSentimentIntoPage(overallSentiment, positivityPercentage, sentimentData) {
+    const existingSentiment = document.getElementById('sentiment-analysis');
+    if (existingSentiment) {
+        // If already exists, update the content
+        existingSentiment.remove();
+    }
+
+    // Create a new div to display sentiment analysis
+    const sentimentDiv = document.createElement('div');
+    sentimentDiv.id = 'sentiment-analysis';
+    sentimentDiv.style.backgroundColor = '#ffeb3b';
+    sentimentDiv.style.padding = '10px';
+    sentimentDiv.style.margin = '10px 0';
+    sentimentDiv.style.borderRadius = '5px';
+    sentimentDiv.style.color = '#000';
+    sentimentDiv.style.fontWeight = 'bold';
+    sentimentDiv.style.textAlign = 'center';
+
+    sentimentDiv.innerHTML = `
+        <p>Overall Sentiment: ${overallSentiment}</p>
+        <p>Positivity Percentage: ${positivityPercentage.toFixed(2)}%</p>
+    `;
+
+    // Inject this div above the comments section
+    const target = document.querySelector('#comments');  // Inject above comments
+    if (target) {
+        target.insertAdjacentElement('beforebegin', sentimentDiv);
+    } else {
+        console.error('YouTube comments section not found.');
+    }
+}
+
+
+
+
 // Listen for the message to start sentiment analysis
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'startSentimentAnalysis') {
@@ -75,7 +111,25 @@ function getVideoIdFromUrl() {
 // Send video ID to the background script
 const videoId = getVideoIdFromUrl();
 if (videoId) {
-    chrome.runtime.sendMessage({ action: 'sendVideoId', videoId: videoId });
+    // Send message to background script to start sentiment analysis
+    chrome.runtime.sendMessage({ action: 'getVideoId' }, (response) => {
+        const videoId = response.videoId;
+        if (videoId) {
+            // Fetch the sentiment analysis and inject the data into the YouTube page
+            getTrainingDataFromCsv(chrome.runtime.getURL('trainingData/trainingData.csv'))
+                .then(() => {
+                    fetchYoutubeCommentsVideoId(videoId).then((sentimentData) => {
+                        const { overallSentiment, positivityPercentage, individualCommentData } = sentimentData;
+                        injectSentimentIntoPage(overallSentiment, positivityPercentage, individualCommentData);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching CSV file:', error);
+                });
+        } else {
+            console.error('No video ID found in the response.');
+        }
+    });
 } else {
     console.error('Unable to extract video ID from the URL.');
 }
@@ -121,7 +175,16 @@ function displayFilteredComments(comments) {
         const li = document.createElement('li');
         const sentimentColor = commentData.sentiment === 'Positive' ? 'green' :
             commentData.sentiment === 'Negative' ? 'red' : 'gray';
-        const sentimentText = `<span style="color:${sentimentColor};">${commentData.sentiment}</span>`;
+
+        let sentimentText = ``;
+
+        if (commentData.sentiment === 'Positive') {
+            sentimentText = `<span style="color:green;">Positive 😄</span>`;
+        } else if (commentData.sentiment === 'Negative') {
+            sentimentText = `<span style="color:red;">Negative 😡</span>`;
+        } else {
+            sentimentText = `<span style="color:gray;">Neutral 😐</span>`;
+        }
 
         li.innerHTML = `
             <div class="comment">
@@ -228,8 +291,16 @@ async function modifyCommentSection(overallSentiment, overallSentimentProbabilit
     const sentimentParagraph = document.createElement('p');
     sentimentParagraph.id = 'sentimentParagraph';
 
-    // Set the overall sentiment text with probability and positivity percentage
-    sentimentParagraph.innerText = `Overall Comment Sentiment: ${overallSentiment} (${(overallSentimentProbability * 100).toFixed(2)}% positivity)`;
+    sentimentParagraph.innerHTML = `<span style="color:white;">Overall Comment Sentiment: </span>`;
+
+    if (overallSentiment === 'Positive') {
+        sentimentParagraph.innerHTML += `<span style="color:green;">Positive (${(overallSentimentProbability * 100).toFixed(2)}% positivity) 😄</span>`;
+    } else if (overallSentiment === 'Negative') {
+        sentimentParagraph.innerHTML +=  `<span style="color:red;">Negative (${(overallSentimentProbability * 100).toFixed(2)}% positivity) 😡</span>`;
+    } else {
+        sentimentParagraph.innerHTML +=  `<span style="color:gray;">Neutral (${(overallSentimentProbability * 100).toFixed(2)}% positivity) 😐</span>`;
+    }
+
 
     // Style the paragraph (optional)
     sentimentParagraph.style.fontSize = '20px';
@@ -237,9 +308,19 @@ async function modifyCommentSection(overallSentiment, overallSentimentProbabilit
     sentimentParagraph.style.fontWeight = 'bold';
     sentimentParagraph.style.margin = '10px 0';
     sentimentParagraph.style.textAlign = 'center';
+    sentimentParagraph.style.backgroundColor = '#333';
+    sentimentParagraph.style.padding = '15px';
+    sentimentParagraph.style.margin = '20px 0';
+    sentimentParagraph.style.borderRadius = '8px';
+    sentimentParagraph.style.color = '#ffa500'; // Orange text for consistency
+    sentimentParagraph.style.fontWeight = 'bold';
+    sentimentParagraph.style.textAlign = 'center';
+    sentimentParagraph.style.fontSize = '18px';
+    sentimentParagraph.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.3)';
+
 
     // Insert the paragraph at the top of the page (before the first child of the body)
-    const body = document.querySelector('body');
+    const body = document.querySelector('.container');
     body.insertBefore(sentimentParagraph, body.firstChild);
 }
 
