@@ -77,6 +77,20 @@ function injectSentimentIntoPage(overallSentiment, positivityPercentage, sentime
         existingSentiment.remove();
     }
 
+    let positiveCount = 0;
+    let neutralCount = 0;
+    let negativeCount = 0;
+
+    sentimentData.forEach(commentData => {
+        if (commentData.sentiment === 'Positive') {
+            positiveCount++;
+        } else if (commentData.sentiment === 'Negative') {
+            negativeCount++;
+        } else {
+            neutralCount++;
+        }
+    });
+
     // Create a new div to display sentiment analysis
     const sentimentDiv = document.createElement('div');
     sentimentDiv.id = 'sentiment-analysis';
@@ -91,6 +105,9 @@ function injectSentimentIntoPage(overallSentiment, positivityPercentage, sentime
     sentimentDiv.innerHTML = `
         <p>Overall Sentiment: ${overallSentiment}</p>
         <p>Positivity Percentage: ${positivityPercentage.toFixed(2)}%</p>
+        <p>Positive Comments: ${positiveCount}</p>
+        <p>Neutral Comments: ${neutralCount}</p>
+        <p>Negative Comments: ${negativeCount}</p>
     `;
 
     // Inject this div above the comments section
@@ -430,19 +447,43 @@ async function modifyCommentSection(overallSentiment, overallSentimentProbabilit
         return;
     }
 
+    let positiveCount = 0;
+    let neutralCount = 0;
+    let negativeCount = 0;
+
+    allCommentsData.forEach(commentData => {
+        if (commentData.sentiment === 'Positive') {
+            positiveCount++;
+        } else if (commentData.sentiment === 'Negative') {
+            negativeCount++;
+        } else {
+            neutralCount++;
+        }
+    });
+
+
     // Create a new paragraph element to display overall sentiment
     const sentimentParagraph = document.createElement('p');
     sentimentParagraph.id = 'sentimentParagraph';
 
     sentimentParagraph.innerHTML = `<span style="color:white;">Overall Comment Sentiment: </span>`;
 
+
     if (overallSentiment === 'Positive') {
-        sentimentParagraph.innerHTML += `<span style="color:green;">Positive (${(overallSentimentProbability * 100).toFixed(2)}% positivity) 😄</span>`;
+        sentimentParagraph.innerHTML += `<span style="color:green;">Positive (${(overallSentimentProbability * 100).toFixed(2)}% positivity rating) 😄</span>`;
     } else if (overallSentiment === 'Negative') {
-        sentimentParagraph.innerHTML += `<span style="color:red;">Negative (${(overallSentimentProbability * 100).toFixed(2)}% positivity) 😡</span>`;
+        sentimentParagraph.innerHTML += `<span style="color:red;">Negative (${(overallSentimentProbability * 100).toFixed(2)}% positivity rating) 😡</span>`;
     } else {
-        sentimentParagraph.innerHTML += `<span style="color:gray;">Neutral (${(overallSentimentProbability * 100).toFixed(2)}% positivity) 😐</span>`;
+        sentimentParagraph.innerHTML += `<span style="color:gray;">Neutral (${(overallSentimentProbability * 100).toFixed(2)}% positivity rating) 😐</span>`;
     }
+
+    sentimentParagraph.innerHTML += `
+        <div style="font-size: 14px; color: #ccc; margin-top: 8px;">
+        <p>Positive Comments: ${positiveCount}</p>
+        <p>Neutral Comments: ${neutralCount}</p>
+        <p>Negative Comments: ${negativeCount}</p>
+        </div>
+    `;
 
 
     // Style the paragraph (optional)

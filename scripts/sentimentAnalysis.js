@@ -517,6 +517,20 @@ function displayComments(commentsArray, overallSentiment, overallSentimentProbab
     const overallSentimentProbabilityPercentage = Math.floor(overallSentimentProbability * 100 * 100) / 100;
     const positivityPercentageRounded = Math.floor(positivityPercentage * 100) / 100;
 
+    let positiveCount = 0;
+    let neutralCount = 0;
+    let negativeCount = 0;
+
+    individualCommentData.forEach(commentData => {
+        if (commentData.sentiment === 'Positive') {
+            positiveCount++;
+        } else if (commentData.sentiment === 'Negative') {
+            negativeCount++;
+        } else {
+            neutralCount++;
+        }
+    });
+
     // Display overall sentiment, probability, and positivity percentage
     const overallSentimentText = document.createElement('p');
     overallSentimentText.textContent = `Overall Sentiment: ${overallSentiment}`;
@@ -524,9 +538,12 @@ function displayComments(commentsArray, overallSentiment, overallSentimentProbab
     overallSentimentProbabilityText.textContent = `Overall Probability: ${overallSentimentProbabilityPercentage}%`;
     const positivityPercentageText = document.createElement('p');
     positivityPercentageText.textContent = `Overall Positivity Percentage: ${positivityPercentageRounded}%`;
+    const commentCountsText = document.createElement('p');
+    commentCountsText.textContent = `Comments Breakdown: Positive - ${positiveCount}, Neutral - ${neutralCount}, Negative - ${negativeCount}`;
     commentsList.appendChild(overallSentimentText);
     commentsList.appendChild(overallSentimentProbabilityText);
     commentsList.appendChild(positivityPercentageText);
+    commentsList.appendChild(commentCountsText);
 
     // Display individual comments with their sentiment and probability
     individualCommentData.forEach(commentData => {
