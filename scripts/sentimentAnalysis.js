@@ -100,7 +100,7 @@ let emojiSentiment = {
 
 let zeroCount = 0;
 let fourCount = 0;
-let trainingIterations = 6;
+let trainingIterations = 4;
 
 let apiBaseUrl = 'https://youtube.googleapis.com/youtube/v3';
 let key = "AIzaSyBav8jQwmVNxRFk4Q2FcviOHnUwbJjM8cU";
