@@ -8,11 +8,11 @@ let negativeWords = {
     "gloomy": 2.0, "greed": 2.0, "harm": 2.0, "hate": 3.0, "horrible": 3.0,
     "worthless": 2.5, "wreck": 2.0, "ugly": 2.0, "untrustworthy": 2.5, "vicious": 3.0,
     "abandon": 2.0, "agony": 2.5, "anguish": 3.0, "annoying": 2.0, "appalling": 3.0,
-    "arrogant": 2.5, "ashamed": 2.5, "atrophy": 3.0, "avoid": 2.0, "awful": 2.5,
+    "arrogant": 2.5, "ashamed": 2.5, "atrophy": 3.0, "avoid": 2.0,
     "backstab": 2.5, "baffling": 2.0, "bankrupt": 3.0, "barbaric": 3.0, "betrayed": 2.5,
     "bleak": 2.5, "blunder": 2.0, "brutal": 3.0, "bug": 1.5, "burden": 2.5,
     "callous": 2.5, "catastrophic": 3.0, "chaotic": 2.5, "clumsy": 2.0, "complaint": 2.0,
-    "contempt": 3.0, "corrupt": 3.0, "coward": 2.5, "creepy": 2.5, "cringe": 2.0,
+    "contempt": 3.0, "coward": 2.5, "creepy": 2.5,
     "crisis": 2.5, "criticize": 2.0, "cruelty": 3.0, "cry": 2.5, "cynical": 2.5,
     "dangerous": 2.5, "deadly": 3.0, "defeat": 2.5, "defective": 2.0, "deformed": 2.5,
     "depressing": 3.0, "despair": 3.0, "desperate": 2.5, "destruction": 3.0, "detest": 2.5,
@@ -34,12 +34,22 @@ let negativeWords = {
     "problem": 2.0, "regret": 2.5, "repulsive": 3.0, "resent": 2.5, "rotten": 2.5,
     "rude": 2.0, "ruin": 3.0, "sabotage": 2.5, "sad": 2.5, "selfish": 2.5,
     "shame": 2.5, "sick": 2.0, "sinister": 3.0, "skeptical": 2.0, "stupid": 2.5,
-    "substandard": 2.0, "suffering": 3.0, "terrible": 3.0, "threat": 2.5, "toxic": 3.0,
+    "substandard": 2.0, "suffering": 3.0, "terrible": 3.0, "threat": 2.5,
     "tragic": 3.0, "trash": 2.5, "ugliness": 2.5, "unbearable": 2.5, "undesirable": 2.0,
     "unfortunate": 2.5, "unhappy": 2.0, "unpleasant": 2.0, "unreliable": 2.5, "upset": 2.5,
-    "useless": 2.5, "victim": 2.0, "violent": 3.0, "vulgar": 2.5, "weak": 2.0,
-    "wicked": 3.0, "worried": 2.5, "worthless": 2.5, "wrecked": 2.0, "wrong": 2.0
+    "useless": 2.5, "victim": 2.0, "violent": 3.0, "vulgar": 2.5,
+    "wicked": 3.0, "worried": 2.5,  "wrecked": 2.0, "wrong": 2.0,
+    "cringey": 2.5, "troll": 2.0, "clown": 2.0, "dumb": 2.0, "salty": 2.0,
+     "L": 2.0, "rage": 2.5, "noob": 2.0,
+     "nuke": 2.5, "bot": 2.0, "hater": 2.5, "yikes": 2.0,
+    "nerfed": 2.0, "sus": 2.0, "flame": 2.5, "burn": 2.0,
+    "weak": 2.0, "washed": 2.0, "thirsty": 2.0, "toxic": 3.0, "triggered": 2.5,
+    "ghosted": 2.0, "busted": 2.0, "cancel": 3.0, "flop": 2.0, "booted": 2.0,
+    "camping": 1.5, "rekt": 2.5, "griefing": 2.0, "lag": 1.5, "smh": 2.0,
+    "trashcan": 2.5, "cringe": 2.5, "ragequit": 2.5, "GG": 2.0, "cursed": 2.5,
+    "scuffed": 2.0, "degen": 2.5, "karen": 2.5, "ratio": 2.0, "pwned": 2.0
 };
+
 // Pre-populated positive words with associated weights
 let positiveWords = {
     "amazing": 3.0, "awesome": 3.0, "beautiful": 2.5, "bliss": 2.5, "brilliant": 3.0,
@@ -60,7 +70,11 @@ let positiveWords = {
     "radiant": 3.0, "refreshing": 2.5, "remarkable": 3.0, "resourceful": 2.5, "respected": 2.5,
     "rewarding": 2.5, "satisfying": 2.5, "spectacular": 3.0, "successful": 3.0, "supportive": 2.5,
     "thrilled": 3.0, "trustworthy": 2.5, "uplifting": 2.5, "visionary": 2.5, "warmhearted": 2.5,
-    "worthy": 2.5, "youthful": 2.5
+    "worthy": 2.5, "youthful": 2.5,
+    "fire": 3.0, "lit": 3.0, "savage": 2.5, "hype": 3.0,
+    "goat": 3.0, "clutch": 3.0, "pog": 3.0, "wholesome": 3.0, "W": 3.0,
+    "clean": 2.5, "based": 2.5, "dope": 3.0, "vibe": 2.5, "legend": 3.0,
+    "finesse": 2.5, "valid": 2.5, "smooth": 2.5, "noice": 2.5, "blessed": 3.0
 };
 
 // Pre-populated neutral words with associated weights
@@ -75,27 +89,38 @@ let neutralWords = {
     "connection": 1.0, "context": 1.0, "definition": 1.0, "device": 1.0, "element": 1.0,
     "feature": 1.0, "framework": 1.0, "goal": 1.0, "instance": 1.0, "layer": 1.0,
     "layout": 1.0, "machine": 1.0, "mechanism": 1.0, "method": 1.0, "module": 1.0,
-    "object": 1.0, "operation": 1.0, "parameter": 1.0, "process": 1.0, "program": 1.0,
+    "operation": 1.0, "parameter": 1.0, "process": 1.0, "program": 1.0,
     "project": 1.0, "protocol": 1.0, "report": 1.0, "response": 1.0, "role": 1.0,
     "section": 1.0, "session": 1.0, "specification": 1.0, "structure": 1.0, "system": 1.0,
     "task": 1.0, "tool": 1.0, "transaction": 1.0, "user": 1.0, "utility": 1.0,
-    "value": 1.0, "variable": 1.0, "version": 1.0, "workflow": 1.0
+    "value": 1.0, "variable": 1.0, "version": 1.0, "workflow": 1.0,
+    "update": 1.0, "refresh": 1.0, "install": 1.0, "load": 1.0, "server": 1.0,
+    "status": 1.0, "ping": 1.0, "AFK": 1.0, "drop": 1.0, "backup": 1.0,
+    "frame": 1.0, "gameplay": 1.0, "screen": 1.0, "video": 1.0, "clip": 1.0
 };
 
 let emojiSentiment = {
     // Positive emojis
     "😊": 3.0, "😄": 3.0, "😍": 3.0, "🤩": 3.0, "👍": 2.5, "❤": 3.0, "😇": 3.0,
     "🎉": 3.0, "🎊": 3.0, "💖": 3.0, "🌟": 3.0, "👏": 2.5, "✨": 3.0, "🎈": 3.0,
-    "🙌": 3.0, "🤗": 3.0, "💪": 2.5, "👑": 3.0, "💫": 3.0,
+    "🙌": 3.0, "🤗": 3.0, "💪": 2.5, "👑": 3.0, "💫": 3.0, "🥳": 3.0, "😎": 3.0,
+    "😻": 3.0, "🔥": 3.0, "💯": 3.0, "🤙": 2.5, "🤑": 2.5, "🤝": 2.5, "🙏": 3.0,
+    "😋": 2.5, "⭐": 3.0, "🌈": 3.0, "🍀": 2.5, "🏆": 3.0, "🥇": 3.0,
+    "🎁": 3.0, "💎": 3.0, "🧡": 3.0, "😌": 2.5, "🤟": 2.5,
 
     // Negative emojis
     "😢": -3.0, "😡": -3.0, "👎": -2.5, "😭": -3.0, "😓": -2.0, "😕": -3.0,
-    "😠": -2.5, "💔": -3.0, "😣": -3.0, "😞": -2.5, "🤬": -3.0, "😨": -2.0, "😫": -3.0,
-    "😱": -2.5, "😖": -3.0, "😔": -2.5, "😤": -2.5, "💢": -2.5,
+    "💔": -3.0, "😣": -3.0, "😞": -2.5, "🤬": -3.0, "😨": -2.0, "😫": -3.0,
+    "😱": -2.5, "😖": -3.0, "😔": -2.5, "😤": -2.5, "💢": -2.5, "🤢": -3.0, "🤮": -3.0,
+    "😒": -2.5, "👿": -3.0, "🖕": -3.0, "🤯": -2.0, "😧": -2.5, "😬": -2.0, "😷": -2.0,
+    "😟": -2.5, "💀": -2.5, "🤕": -2.5, "🤧": -2.0, "😠": -2.5, "💣": -2.5, "⚠️": -2.0,
 
     // Neutral emojis
     "😐": 0.0, "🤔": 0.0, "🧐": 0.0, "😑": 0.0, "🤨": 0.0, "😶": 0.0,
-    "📝": 0.0, "📄": 0.0, "💼": 0.0, "📊": 0.0, "📈": 0.0, "📉": 0.0
+    "📝": 0.0, "📄": 0.0, "💼": 0.0, "📊": 0.0, "📈": 0.0, "📉": 0.0, "👀": 0.0,
+    "🤖": 0.0, "🛑": 0.0, "🚶": 0.0, "🤷‍♂️": 0.0, "🤷‍♀️": 0.0, "✋": 0.0,
+    "💡": 0.0, "⚙️": 0.0, "🛠": 0.0, "📌": 0.0, "🖋": 0.0, "⌛": 0.0, "⏳": 0.0,
+    "💭": 0.0, "🔍": 0.0, "📂": 0.0, "🛒": 0.0, "🔐": 0.0, "🔧": 0.0
 };
 
 let zeroCount = 0;
