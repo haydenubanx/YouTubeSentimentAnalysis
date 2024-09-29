@@ -408,8 +408,7 @@ function analyzeSentiments(commentsArray) {
         const sentimentScore = calculateSentimentScore(topLevelComment);
 
         // Weight the sentiment score by 1 + logarithmic likes, but with a damping factor
-        // const weightedSentimentScore = sentimentScore * (1 + 0.3 * Math.log1p(likeCount));
-        const weightedSentimentScore = sentimentScore * (1 + 0.15 * likeCount);
+        const weightedSentimentScore = sentimentScore * (1 + 0.5 * likeCount);
 
         // Apply sigmoid to sentiment score for smoother probability mapping
         const sentimentProbability = sigmoid(weightedSentimentScore);
@@ -431,22 +430,26 @@ function analyzeSentiments(commentsArray) {
             probability: sentimentProbability
         });
 
-        totalSentimentProbability += sentimentProbability * (1 + 0.15 * likeCount);
-        sentimentCount += (1 + 0.15 * likeCount);
+        totalSentimentProbability += sentimentProbability * (1 + 0.5 * likeCount);
+        sentimentCount += (1 + 0.5 * likeCount);
     });
 
     const averageSentimentProbability = (totalSentimentProbability / sentimentCount);
     const overallSentimentProbability = sigmoid(averageSentimentProbability);
 
     let overallSentiment = 'Neutral';
-    if (averageSentimentProbability > 0.8) {
+    if (positiveCount === 0 && negativeCount > 0) {
+        overallSentiment = 'Overwhelmingly Negative';
+    } else if (negativeCount === 0 && positiveCount > 0) {
+        overallSentiment = 'Overwhelmingly Positive';
+    } else if (averageSentimentProbability > 0.8) {
         overallSentiment = 'Overwhelmingly Positive';
     } else if (averageSentimentProbability > 0.5) {
         overallSentiment = 'Positive';
-    } else if (averageSentimentProbability < -0.5 && averageSentimentProbability > -0.2) {
-        overallSentiment = 'Negative';
-    } else if (averageSentimentProbability < -0.2) {
+    } else if (averageSentimentProbability < -0.5) {
         overallSentiment = 'Overwhelmingly Negative';
+    } else if (averageSentimentProbability < -0.2) {
+        overallSentiment = 'Negative';
     }
 
     const totalPosNegComments = positiveCount + negativeCount;
@@ -488,9 +491,9 @@ function calculateSentimentScore(commentText) {
         }
 
         if (positiveWords[word]) {
-            score += negate ? Math.min(-positiveWords[word], 2) : Math.min(positiveWords[word], 2);
+            score += negate ? Math.min(-positiveWords[word], 1.5) : Math.min(positiveWords[word], 2.5);
         } else if (negativeWords[word]) {
-            score += negate ? Math.min(negativeWords[word], 1.5) : Math.min(-negativeWords[word], 1.5);
+            score += negate ? Math.min(negativeWords[word], 1.0) : Math.min(-negativeWords[word], 1.5);
         } else if (neutralWords[word]) {
             score += 0;
         }
@@ -641,8 +644,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }).catch(error => {
                 console.error('Error fetching CSV file:', error);
             });
-        } else {
-            console.error('No video ID found in the response.');
         }
     });
 });

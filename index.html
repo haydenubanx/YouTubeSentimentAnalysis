@@ -9,72 +9,81 @@
     <!-- Link to an external font -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
-    <!-- Internal CSS for professional design -->
+    <!-- Internal CSS for a modern, aesthetic design -->
     <style>
+        /* Reset and box model setup */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        /* Body styling */
         body {
             font-family: 'Roboto', sans-serif;
-            background-color: #1f1f1f; /* Slightly darker background */
+            background-color: #181818; /* Dark mode background */
             color: #e0e0e0; /* Light grey text color */
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            margin: 0;
             padding: 20px;
-            width: 100%;
         }
 
+        /* Main container styling */
         .container {
-            background-color: #2e2e2e;
+            background-color: #242424; /* Deep grey */
             border-radius: 15px;
-            box-shadow: 0px 12px 35px rgba(0, 0, 0, 0.25);
-            padding: 40px;
-            max-width: 850px; /* Slightly wider for improved layout */
+            box-shadow: 0px 12px 35px rgba(0, 0, 0, 0.3); /* Deeper shadow for modern look */
+            padding: 50px;
+            max-width: 800px;
             width: 100%;
-            margin: auto;
             text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
+        .container:hover {
+            transform: translateY(-5px); /* Subtle hover effect */
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5); /* Enhanced hover shadow */
+        }
+
+        /* Header styling */
         h1 {
-            color: #ffa500; /* Orange header */
-            font-size: 36px;
-            margin-bottom: 35px;
+            color: #f5f5f5; /* Teal header for a modern contrast */
+            font-size: 38px;
+            margin-bottom: 30px;
             font-weight: 700;
         }
 
+        /* Filter buttons styling */
         #filter-buttons {
             display: flex;
             justify-content: center;
-            gap: 20px;
+            gap: 15px;
             margin-bottom: 40px;
         }
 
         .btn {
             padding: 14px 30px;
-            background-color: #ff4500;
+            background-color: #ff5722; /* Slightly muted orange */
             color: #fff;
-            border-radius: 8px;
-            font-weight: bold;
+            border-radius: 50px; /* Rounded, pill-shaped buttons */
+            font-weight: 500;
             text-decoration: none;
             cursor: pointer;
             transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            font-size: 15px;
+            box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4); /* Softer shadow */
             border: none;
-            font-size: 16px;
-            box-shadow: 0 4px 15px rgba(255, 69, 0, 0.5);
         }
 
         .btn:hover {
-            background-color: #e63900;
-            transform: translateY(-4px);
-            box-shadow: 0 6px 20px rgba(255, 69, 0, 0.7);
+            background-color: #ff3d00; /* Darker hover effect */
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 87, 34, 0.6);
         }
 
+        /* Comments container styling */
         #commentsContainer {
             list-style: none;
             padding: 0;
@@ -83,58 +92,55 @@
         }
 
         #commentsContainer li {
-            background-color: #3a3a3a; /* Slightly lighter grey for contrast */
+            background-color: #333; /* Slightly lighter grey for contrast */
             padding: 20px;
-            border-radius: 10px;
+            border-radius: 12px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-            transition: transform 0.3s ease;
-            color: #f0f0f0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         #commentsContainer li:hover {
-            transform: translateY(-7px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
         }
 
-        #commentsContainer li p {
-            margin-bottom: 8px;
-        }
-
+        /* Comments text */
         .comment-text {
             font-size: 16px;
             margin-bottom: 12px;
             color: #e0e0e0;
-            line-height: 1.5;
+            line-height: 1.6;
         }
 
         .comment-sentiment {
-            font-size: 15px;
-            font-weight: 500;
+            font-size: 14px;
+            font-weight: 600;
             margin-bottom: 6px;
-            color: #ffa500;
+            color: #f5f5f5; /* Teal accent */
         }
 
         .comment-probability, .comment-likes {
             font-size: 13px;
-            color: #c0c0c0;
+            color: #c0c0c0; /* Slightly muted for secondary info */
         }
 
-        /* Loading message style */
+        /* Loading message styling */
         #loading-message {
             font-size: 18px;
-            color: #ffa500;
+            color: #f5f5f5;
             margin-bottom: 25px;
             animation: pulse 1.5s infinite;
         }
 
+        /* Keyframe for loading pulse animation */
         @keyframes pulse {
             0% { opacity: 1; }
             50% { opacity: 0.6; }
             100% { opacity: 1; }
         }
 
-        /* Responsive styling */
+        /* Responsive adjustments */
         @media (max-width: 768px) {
             body {
                 padding: 10px;
@@ -161,7 +167,6 @@
                 font-size: 12px;
             }
         }
-
     </style>
 </head>
 <body>
@@ -179,6 +184,7 @@
     <!-- Loading message -->
     <p id="loading-message">Loading comments...</p>
 
+    <!-- Comments container -->
     <ul id="commentsContainer" class="commentsContainer" style="display:none">
         <!-- Invisible comment to maintain consistent width -->
         <li id="invisible-comment" style="visibility:hidden;">
