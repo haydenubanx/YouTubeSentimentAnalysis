@@ -5,7 +5,17 @@
   "manifest_version": 3,
   "action": {
     "default_popup": "index.html",
-    "default_title": "Comment Sentiment Analysis For Youtube"
+    "default_title": "Comment Sentiment Analysis For Youtube",
+    "default_icon": {
+      "16": "includes/img.png",
+      "48": "includes/img.png",
+      "128": "includes/img.png"
+    }
+  },
+  "icons": {
+    "16": "includes/img.png",
+    "48": "includes/img.png",
+    "128": "includes/img.png"
   },
   "host_permissions": [
     "https://www.youtube.com/*",
