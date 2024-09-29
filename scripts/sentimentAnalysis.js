@@ -54,27 +54,88 @@ let negativeWords = {
 let positiveWords = {
     "amazing": 3.0, "awesome": 3.0, "beautiful": 2.5, "bliss": 2.5, "brilliant": 3.0,
     "cheerful": 2.5, "delightful": 2.5, "ecstatic": 3.0, "elegant": 2.5, "excellent": 3.0,
-    "fantastic": 3.0, "glad": 2.0, "graceful": 2.5, "happy": 3.0, "honest": 2.5,
+    "fantastic": 3.0, "glad": 2.0, "happy": 3.0, "honest": 2.5,
     "incredible": 3.0, "joy": 2.5, "kind": 2.0, "love": 3.0, "lucky": 2.5,
-    "marvelous": 3.0, "optimistic": 2.5, "peaceful": 2.0, "perfect": 3.0, "pleasant": 2.5,
-    "wonderful": 3.0, "zealous": 2.0, "zest": 2.5, "vibrant": 2.5, "victorious": 3.0,
+      "peaceful": 2.0, "perfect": 3.0, "pleasant": 2.5,
+    "wonderful": 3.0,  "zest": 2.5,
     "nice": 2.5, "thanks": 3.0, "good": 3.0, "great": 3.0, "lovely": 3.0,
     "admire": 3.0, "adorable": 2.5, "adventurous": 2.5, "affectionate": 3.0, "ambitious": 2.5,
-    "appreciative": 2.5, "astounding": 3.0, "authentic": 2.5, "benevolent": 2.5, "blissful": 3.0,
+    "appreciative": 2.5, "astounding": 3.0, "authentic": 2.5,  "blissful": 3.0,
     "calm": 2.0, "captivating": 3.0, "charming": 2.5, "compassionate": 2.5, "confident": 2.5,
     "courageous": 2.5, "creative": 2.5, "dazzling": 3.0, "dedicated": 2.5, "eager": 2.0,
-    "enthusiastic": 2.5, "faithful": 2.5, "flourishing": 2.5, "friendly": 2.5, "generous": 2.5,
-    "genius": 3.0, "grateful": 2.5, "harmonious": 2.5, "honorable": 2.5, "inspiring": 3.0,
-    "intelligent": 3.0, "jubilant": 3.0, "lively": 2.5, "magical": 3.0, "motivated": 2.5,
-    "outstanding": 3.0, "phenomenal": 3.0, "playful": 2.5, "positive": 2.5, "prosperous": 2.5,
-    "radiant": 3.0, "refreshing": 2.5, "remarkable": 3.0, "resourceful": 2.5, "respected": 2.5,
-    "rewarding": 2.5, "satisfying": 2.5, "spectacular": 3.0, "successful": 3.0, "supportive": 2.5,
-    "thrilled": 3.0, "trustworthy": 2.5, "uplifting": 2.5, "visionary": 2.5, "warmhearted": 2.5,
-    "worthy": 2.5, "youthful": 2.5,
-    "fire": 3.0, "lit": 3.0, "savage": 2.5, "hype": 3.0,
-    "goat": 3.0, "clutch": 3.0, "pog": 3.0, "wholesome": 3.0, "W": 3.0,
-    "clean": 2.5, "based": 2.5, "dope": 3.0, "vibe": 2.5, "legend": 3.0,
-    "finesse": 2.5, "valid": 2.5, "smooth": 2.5, "noice": 2.5, "blessed": 3.0
+    "enthusiastic": 2.5, "faithful": 2.5,
+    "genius": 3.0,  "inspiring": 3.0,
+    "intelligent": 3.0, "magical": 3.0,
+    "phenomenal": 3.0, "playful": 2.5,
+     "refreshing": 2.5,  "respected": 2.5,
+    "rewarding": 2.5, "satisfying": 2.5, "spectacular": 3.0,
+   "trustworthy": 2.5,  "visionary": 2.5,
+    "delight": 3.0, "radiate": 2.5, "kindhearted": 2.5,
+    "charitable": 2.5, "compelling": 2.5, "amused": 2.5, "elated": 3.0, "uplifted": 3.0,
+    "exhilarated": 3.0, "joyful": 3.0, "comforted": 2.5, "content": 2.5,
+    "fantabulous": 3.0,"radiating": 3.0, "breathtaking": 3.0,
+    "wonderstruck": 3.0, "gleaming": 2.5, "adoring": 3.0, "sublime": 3.0,
+    "mesmerizing": 3.0, "enchanting": 3.0, "thriving": 2.5, "vital": 2.5,
+    "flourish": 3.0, "uplift": 2.5,  "heartwarming": 3.0, "zeal": 2.5,
+    "radiance": 3.0,
+    "endearing": 2.5, "sparkling": 3.0, "delighted": 3.0, "exuberant": 3.0,
+     "compassion": 3.0, "brave": 2.5,
+    "trusting": 2.5,"vivacious": 3.0, "bubbly": 2.5, "zippy": 2.5,
+    "cheery": 2.5, "jaunty": 2.5, "spunky": 2.5, "exquisite": 3.0,
+    "diligent": 2.5, "amiable": 2.5,
+    "blessed": 3.0,
+    "balanced": 2.5, "benevolent": 3.0, "blissfully": 3.0,
+    "fulfilling": 3.0,  "gratified": 3.0, "gracefully": 2.5,
+    "innovative": 3.0, "kindness": 2.5,
+    "motivational": 2.5, "noteworthy": 2.5, "optimism": 2.5,
+    "peacefully": 2.5, "positivity": 2.5, "praiseworthy": 3.0,  "prosperity": 2.5,
+    "radiantly": 3.0, "refreshed": 3.0, "remarkably": 3.0, "resilience": 2.5,
+    "shimmering": 3.0, "sincere": 2.5, "spiritually": 2.5,
+    "stupendous": 3.0, "supportively": 2.5, "trustfully": 2.5,
+     "unflinching": 2.5, "victory": 3.0, "vigorously": 2.5, "vivaciously": 3.0,
+    "youthfully": 2.5,
+    "admirable": 2.5, "commendable": 2.5, "dazzlingly": 3.0, "dependable": 2.5, "devoted": 2.5, "dignified": 2.5, "discerning": 2.5, "dynamic": 2.5,
+    "ebullient": 3.0, "eclectic": 2.5, "effervescent": 3.0, "efficacious": 3.0, "elevated": 2.5,
+    "empathetic": 2.5, "empowered": 2.5, "encouraged": 2.5, "endowed": 2.5, "enlightened": 3.0,
+    "enriching": 2.5, "enthralling": 3.0, "entranced": 3.0, "epic": 3.0, "esteemed": 3.0,
+    "eternal": 2.5, "euphoric": 3.0, "evolved": 2.5, "exalted": 3.0, "exceptional": 3.0,
+    "excited": 3.0, "exemplary": 2.5, "exhilarating": 3.0, "expansive": 2.5, "expressive": 2.5,
+    "extraordinary": 3.0, "fabulous": 3.0, "fair": 2.5, "fanciful": 2.5, "fearless": 2.5,
+    "festive": 3.0, "fit": 2.5, "flawless": 3.0, "flourishing": 3.0, "focused": 2.5,
+    "fortunate": 3.0, "free": 2.5, "friendly": 2.5, "fulfilled": 3.0, "fun": 2.5,
+    "gallant": 2.5, "generous": 3.0, "genial": 2.5, "genuine": 2.5, "gifted": 2.5,
+    "glamorous": 3.0, "gleeful": 3.0, "glimmering": 3.0, "glorious": 3.0, "glowing": 3.0,
+    "grace": 2.5, "graceful": 3.0, "gracious": 2.5, "grand": 3.0, "grateful": 2.5,
+    "greathearted": 3.0, "gregarious": 2.5, "gutsy": 2.5, "hardworking": 2.5, "harmonious": 2.5,
+    "healing": 2.5, "heartening": 2.5, "hearty": 2.5, "heavenly": 3.0, "helpful": 2.5,
+    "heroic": 3.0, "honorable": 2.5, "hopeful": 2.5, "hospitable": 2.5, "humble": 2.5,
+    "humorous": 2.5, "idealistic": 2.5, "illuminating": 3.0, "imaginative": 3.0, "impeccable": 3.0,
+    "impressive": 3.0, "incomparable": 3.0, "influential": 3.0, "inspirational": 3.0, "inspired": 3.0,
+    "intrepid": 2.5, "inventive": 2.5, "jolly": 2.5, "jovial": 2.5, "joyous": 3.0,
+    "jubilant": 3.0, "just": 2.5, "keen": 2.5, "laudable": 2.5, "lavish": 3.0,
+    "legendary": 3.0, "lighthearted": 2.5, "lively": 2.5, "loyal": 2.5, "luminous": 3.0,
+    "luxurious": 3.0, "magnanimous": 3.0, "magnificent": 3.0, "majestic": 3.0, "marvelous": 3.0,
+    "masterful": 3.0, "meaningful": 2.5, "mellow": 2.5, "meritorious": 2.5, "mindful": 2.5,
+    "miraculous": 3.0, "modest": 2.5, "motivated": 2.5, "noble": 2.5, "nurturing": 2.5,
+    "openhearted": 2.5, "optimistic": 2.5, "outstanding": 3.0, "passionate": 3.0, "patient": 2.5,
+    "peaceable": 2.5, "peerless": 3.0, "perceptive": 2.5, "perseverant": 2.5, "philanthropic": 2.5,
+    "picturesque": 3.0, "plucky": 2.5, "poised": 2.5, "polished": 3.0, "positive": 3.0,
+    "powerful": 3.0, "precious": 3.0, "priceless": 3.0, "proactive": 2.5, "prodigious": 3.0,
+    "profound": 3.0, "prominent": 2.5, "prosperous": 3.0, "pure": 2.5, "radiant": 3.0,
+    "rapturous": 3.0, "rare": 2.5, "reassured": 2.5, "refined": 3.0, "reliable": 2.5,
+    "remarkable": 3.0, "resilient": 2.5, "resolute": 2.5, "resourceful": 2.5, "respectful": 2.5,
+    "revered": 2.5, "rewarded": 3.0, "robust": 2.5, "sacred": 2.5, "sagacious": 2.5,
+    "satisfied": 3.0, "secure": 2.5, "selfless": 2.5, "sensational": 3.0, "serendipitous": 2.5,
+    "serene": 2.5, "shining": 3.0, "skillful": 2.5, "soaring": 3.0, "spirited": 2.5,
+    "splendid": 3.0, "spontaneous": 2.5, "steadfast": 2.5, "stellar": 3.0, "stunning": 3.0,
+    "successful": 3.0, "sunny": 2.5, "superb": 3.0, "supportive": 2.5, "supreme": 3.0,
+    "sympathetic": 2.5, "talented": 3.0, "tenacious": 2.5, "terrific": 3.0, "thankful": 2.5,
+    "thoughtful": 2.5, "thrilled": 3.0, "tranquil": 2.5, "transformative": 2.5, "triumphant": 3.0,
+    "truthful": 2.5, "unbelievable": 3.0, "undaunted": 2.5, "unforgettable": 3.0, "unique": 3.0,
+    "uplifting": 2.5, "valiant": 2.5, "valued": 2.5, "venerated": 3.0, "vibrant": 3.0,
+    "victorious": 3.0, "vigorous": 2.5, "virtuous": 2.5, "vivid": 2.5, "warmhearted": 3.0,
+    "welcoming": 2.5, "wholesome": 3.0, "wise": 2.5, "wondrous": 3.0, "worthy": 2.5,
+    "youthful": 2.5, "zany": 2.5, "zestful": 2.5, "zingy": 2.5, "zealous": 2.5
 };
 
 // Pre-populated neutral words with associated weights
@@ -121,6 +182,22 @@ let emojiSentiment = {
     "🤖": 0.0, "🛑": 0.0, "🚶": 0.0, "🤷‍♂️": 0.0, "🤷‍♀️": 0.0, "✋": 0.0,
     "💡": 0.0, "⚙️": 0.0, "🛠": 0.0, "📌": 0.0, "🖋": 0.0, "⌛": 0.0, "⏳": 0.0,
     "💭": 0.0, "🔍": 0.0, "📂": 0.0, "🛒": 0.0, "🔐": 0.0, "🔧": 0.0
+};
+
+let positiveBigrams = {
+    "very good": 3.0, "absolutely amazing": 3.0, "highly recommend": 3.0
+};
+
+let negativeBigrams = {
+    "very bad": 3.0, "absolutely awful": 3.0, "highly disappointed": 3.0
+};
+
+let positiveTrigrams = {
+    "out of this": 3.0, "best ever seen": 3.0
+};
+
+let negativeTrigrams = {
+    "worst ever seen": 3.0, "not worth it": 3.0
 };
 
 let zeroCount = 0;
@@ -342,28 +419,25 @@ function testModel(testData) {
 }
 
 function tuneModel(text, trueLabel) {
-    // Remove extra whitespace and punctuation, lowercasing everything for consistency
     const words = text
         .replace(/[^\w\s]/g, '') // Remove punctuation
-        .toLowerCase()           // Normalize to lowercase
-        .split(/\s+/);           // Split on any whitespace
+        .toLowerCase()
+        .split(/\s+/);
 
     words.forEach(word => {
-        if (trueLabel === 1) {
-            // If the true label is positive, increase the weight of positive words and decrease the weight of negative ones
+        if (trueLabel === 1) {  // Positive label
             if (positiveWords[word]) {
-                positiveWords[word] += 0.5; // Increase weight slightly for positive words
+                positiveWords[word] += 0.8;  // Increase positive words more aggressively
             }
             if (negativeWords[word]) {
-                negativeWords[word] = Math.max(negativeWords[word] - 0.5, 0); // Decrease weight for negative words, not below 0
+                negativeWords[word] = Math.max(negativeWords[word] - 0.8, 0);  // Decrease negative words less aggressively
             }
-        } else if (trueLabel === 0) {
-            // If the true label is negative, increase the weight of negative words and decrease the weight of positive ones
+        } else if (trueLabel === 0) {  // Negative label
             if (negativeWords[word]) {
-                negativeWords[word] += 0.5; // Increase weight slightly for negative words
+                negativeWords[word] += 0.1;
             }
             if (positiveWords[word]) {
-                positiveWords[word] = Math.max(positiveWords[word] - 0.5, 0); // Decrease weight for positive words, not below 0
+                positiveWords[word] = Math.max(positiveWords[word] - 0.2, 0);
             }
         }
     });
@@ -372,24 +446,43 @@ function tuneModel(text, trueLabel) {
 }
 
 function vectorizeText(text, label) {
-    // Remove extra whitespace and punctuation, lowercasing everything for consistency
+    // Remove punctuation, normalize case, and split into words
     const words = text
         .replace(/[^\w\s]/g, '') // Remove punctuation
         .toLowerCase()           // Normalize to lowercase
         .split(/\s+/);           // Split on any whitespace
 
-    words.forEach(word => {
+    // Process single words, bigrams, and trigrams
+    for (let i = 0; i < words.length; i++) {
+        let word = words[i];
+
+        // Handle single words
         if (label === 1) {
-            // Make positive words have an equal or slightly larger weight
-            positiveWords[word] = (positiveWords[word] || 1.0) + 1.5; // Adjusted to 1.0 for balance
+            positiveWords[word] = (positiveWords[word] || 1.0) + 0.5;
         } else if (label === 0) {
-            // Reduce the impact of negative words to make it less biased
-            negativeWords[word] = (negativeWords[word] || 1.0) + 0.7; // Adjusted to 1.0 for balance
-        } else {
-            // Slight increase for neutral words
-            neutralWords[word] = (neutralWords[word] || 1.0) + 0.5; // Small neutral boost
+            negativeWords[word] = (negativeWords[word] || 1.0) + 0.5;
         }
-    });
+
+        // Handle bigrams
+        if (i < words.length - 1) {
+            let bigram = words[i] + ' ' + words[i + 1];
+            if (label === 1) {
+                positiveBigrams[bigram] = (positiveBigrams[bigram] || 1.0) + 0.5;
+            } else if (label === 0) {
+                negativeBigrams[bigram] = (negativeBigrams[bigram] || 1.0) + 0.5;
+            }
+        }
+
+        // Handle trigrams
+        if (i < words.length - 2) {
+            let trigram = words[i] + ' ' + words[i + 1] + ' ' + words[i + 2];
+            if (label === 1) {
+                positiveTrigrams[trigram] = (positiveTrigrams[trigram] || 1.0) + 0.5;
+            } else if (label === 0) {
+                negativeTrigrams[trigram] = (negativeTrigrams[trigram] || 1.0) + 0.5;
+            }
+        }
+    }
 }
 
 function analyzeSentiments(commentsArray) {
@@ -408,7 +501,7 @@ function analyzeSentiments(commentsArray) {
         const sentimentScore = calculateSentimentScore(topLevelComment);
 
         // Weight the sentiment score by 1 + logarithmic likes, but with a damping factor
-        const weightedSentimentScore = sentimentScore * (1 + 0.5 * likeCount);
+        const weightedSentimentScore = sentimentScore * (1 + 0.05 * likeCount);
 
         // Apply sigmoid to sentiment score for smoother probability mapping
         const sentimentProbability = sigmoid(weightedSentimentScore);
@@ -430,26 +523,22 @@ function analyzeSentiments(commentsArray) {
             probability: sentimentProbability
         });
 
-        totalSentimentProbability += sentimentProbability * (1 + 0.5 * likeCount);
-        sentimentCount += (1 + 0.5 * likeCount);
+        totalSentimentProbability += sentimentProbability * (1 + 0.05 * likeCount);
+        sentimentCount += (1 + 0.05 * likeCount);
     });
 
-    const averageSentimentProbability = (totalSentimentProbability / sentimentCount);
-    const overallSentimentProbability = sigmoid(averageSentimentProbability);
+    // Calculate average sentiment probability
+    const averageSentimentProbability = (totalSentimentProbability / sentimentCount) * 100;
 
     let overallSentiment = 'Neutral';
-    if (positiveCount === 0 && negativeCount > 0) {
+    if (averageSentimentProbability < 20) {
         overallSentiment = 'Overwhelmingly Negative';
-    } else if (negativeCount === 0 && positiveCount > 0) {
-        overallSentiment = 'Overwhelmingly Positive';
-    } else if (averageSentimentProbability > 0.8) {
-        overallSentiment = 'Overwhelmingly Positive';
-    } else if (averageSentimentProbability > 0.5) {
-        overallSentiment = 'Positive';
-    } else if (averageSentimentProbability < -0.5) {
-        overallSentiment = 'Overwhelmingly Negative';
-    } else if (averageSentimentProbability < -0.2) {
+    } else if (averageSentimentProbability < 50) {
         overallSentiment = 'Negative';
+    } else if (averageSentimentProbability > 60 && averageSentimentProbability < 80) {
+        overallSentiment = 'Positive';
+    } else if (averageSentimentProbability > 80) {
+        overallSentiment = 'Overwhelmingly Positive';
     }
 
     const totalPosNegComments = positiveCount + negativeCount;
@@ -459,7 +548,7 @@ function analyzeSentiments(commentsArray) {
 
     return {
         overallSentiment,
-        overallSentimentProbability,
+        overallSentimentProbability: averageSentimentProbability,
         positivityPercentage,
         individualCommentData
     };
@@ -468,48 +557,50 @@ function analyzeSentiments(commentsArray) {
 
 function calculateSentimentScore(commentText) {
     let score = 0;
-    const negationWords = ["not", "never", "no", "none"];
-    const emojiRegex = /[\u{1F600}-\u{1F64F}|\u{1F300}-\u{1F5FF}|\u{1F680}-\u{1F6FF}]/gu;
-    let negate = false; // Track if negation should be applied
+    const negationWords = ["not", "never", "no", "none", "regrettably"];
+    const words = commentText.toLowerCase().split(/\s+/);
+    let negate = false;
 
-    // Remove numbers from the comment text
-    commentText = commentText.replace(/\d+/g, '');
-    const words = commentText.split(/\W+/).filter(word => isNaN(word));
-    const emojis = commentText.match(emojiRegex) || [];
-    const totalWords = words.length + emojis.length;
+    for (let i = 0; i < words.length; i++) {
+        let word = words[i];
 
-    if (totalWords === 0) {
-        return 0;
+        // Handle negation
+        if (negationWords.includes(word)) {
+            negate = true;
+            continue;
+        }
+
+        // Check for trigrams
+        if (i < words.length - 2) {
+            let trigram = words[i] + ' ' + words[i + 1] + ' ' + words[i + 2];
+            if (positiveTrigrams[trigram]) {
+                score += negate ? -positiveTrigrams[trigram] : positiveTrigrams[trigram];
+            } else if (negativeTrigrams[trigram]) {
+                score += negate ? negativeTrigrams[trigram] : -negativeTrigrams[trigram];
+            }
+        }
+
+        // Check for bigrams
+        if (i < words.length - 1) {
+            let bigram = words[i] + ' ' + words[i + 1];
+            if (positiveBigrams[bigram]) {
+                score += negate ? -positiveBigrams[bigram] : positiveBigrams[bigram];
+            } else if (negativeBigrams[bigram]) {
+                score += negate ? negativeBigrams[bigram] : -negativeBigrams[bigram];
+            }
+        }
+
+        // Check for single words
+        if (positiveWords[word]) {
+            score += negate ? -positiveWords[word] : positiveWords[word];
+        } else if (negativeWords[word]) {
+            score += negate ? negativeWords[word] : -negativeWords[word];
+        }
+
+        negate = false; // Reset negation after processing a word
     }
 
-    words.forEach((word, index) => {
-        word = word.toLowerCase();
-
-        if (negationWords.includes(word)) {
-            negate = true; // Negate the following words
-            return; // Skip negation words from sentiment
-        }
-
-        if (positiveWords[word]) {
-            score += negate ? Math.min(-positiveWords[word], 1.5) : Math.min(positiveWords[word], 2.5);
-        } else if (negativeWords[word]) {
-            score += negate ? Math.min(negativeWords[word], 1.0) : Math.min(-negativeWords[word], 1.5);
-        } else if (neutralWords[word]) {
-            score += 0;
-        }
-
-        negate = false; // Reset after each word
-    });
-
-    // Boost emoji impact if emojis dominate the comment
-    const emojiBoostFactor = emojis.length > words.length ? 1.5 : 1.0;
-    emojis.forEach(emoji => {
-        if (emojiSentiment[emoji]) {
-            score += emojiSentiment[emoji] * emojiBoostFactor;
-        }
-    });
-
-    return totalWords > 0 ? score / totalWords : 0;
+    return score;
 }
 
 function displayComments(commentsArray, overallSentiment, overallSentimentProbability, positivityPercentage, individualCommentData) {

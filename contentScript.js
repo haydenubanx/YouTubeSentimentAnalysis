@@ -207,25 +207,30 @@ if (videoId) {
 }
 
 function retryFetchVideoId() {
-    const videoId = getVideoIdFromUrl();
+    chrome.storage.local.get(['lastVideoId'], (result) => {
+        let videoId = result.lastVideoId || getVideoIdFromUrl();
 
-    if (videoId) {
-        console.log('Video ID found:', videoId);
-        sendVideoId(videoId);
-        // Trigger the sentiment analysis using the retrieved video ID
-        getTrainingDataFromCsvAndDatabase(chrome.runtime.getURL('trainingData/trainingData.csv')).then(() => {
-            fetchYoutubeCommentsVideoId(videoId);
-        }).catch(error => {
-            console.error('Error fetching CSV file:', error);
-        });
-    } else {
-        console.info('Unable to extract video ID from the URL. Retrying in 1 second...');
-        setTimeout(retryFetchVideoId, 1000);  // Retry after 1 seconds
-    }
+        if (videoId) {
+            console.log('Video ID found:', videoId);
+            sendVideoId(videoId);
+            // Trigger the sentiment analysis using the retrieved video ID
+            getTrainingDataFromCsvAndDatabase(chrome.runtime.getURL('trainingData/trainingData.csv')).then(() => {
+                fetchYoutubeCommentsVideoId(videoId);
+            }).catch(error => {
+                console.error('Error fetching CSV file:', error);
+            });
+        } else {
+            console.info('Unable to extract video ID from the URL. Retrying in 1 second...');
+            setTimeout(retryFetchVideoId, 1000);  // Retry after 1 second
+        }
+    });
 }
 
 function sendVideoId(videoId) {
-    chrome.runtime.sendMessage({action: 'sendVideoId', videoId: videoId});
+    chrome.storage.local.set({ lastVideoId: videoId }, () => {
+        console.log('Video ID stored successfully:', videoId);
+    });
+    chrome.runtime.sendMessage({ action: 'sendVideoId', videoId: videoId });
 }
 
 
@@ -469,12 +474,12 @@ async function modifyCommentSection(overallSentiment, overallSentimentProbabilit
     sentimentParagraph.innerHTML = `<span style="color:white;">Overall Comment Sentiment: </span>`;
 
 
-    if (overallSentiment === 'Positive') {
-        sentimentParagraph.innerHTML += `<span style="color:green;">Positive (${(overallSentimentProbability * 100).toFixed(2)}% positivity rating) 😄</span>`;
-    } else if (overallSentiment === 'Negative') {
-        sentimentParagraph.innerHTML += `<span style="color:red;">Negative (${(overallSentimentProbability * 100).toFixed(2)}% positivity rating) 😡</span>`;
+    if (overallSentiment.includes('Positive')) {
+        sentimentParagraph.innerHTML += `<span style="color:green;">${overallSentiment} (${(overallSentimentProbability).toFixed(2)}% positivity rating) 😄</span>`;
+    } else if (overallSentiment.includes('Negative')) {
+        sentimentParagraph.innerHTML += `<span style="color:red;">${overallSentiment} (${(overallSentimentProbability).toFixed(2)}% positivity rating) 😡</span>`;
     } else {
-        sentimentParagraph.innerHTML += `<span style="color:gray;">Neutral (${(overallSentimentProbability * 100).toFixed(2)}% positivity rating) 😐</span>`;
+        sentimentParagraph.innerHTML += `<span style="color:gray;">${overallSentiment} (${(overallSentimentProbability).toFixed(2)}% positivity rating) 😐</span>`;
     }
 
     sentimentParagraph.innerHTML += `
@@ -565,6 +570,8 @@ document.addEventListener('DOMContentLoaded', function () {
     initializeModelAndStartSentiment();
 
     retryFetchVideoId();
+
+    observeUrlChanges();
 
 
     // Request the current video ID from the background script
