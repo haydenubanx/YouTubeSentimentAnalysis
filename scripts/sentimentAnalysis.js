@@ -16,7 +16,8 @@ let positiveWords = {
     "fantastic": 3.0, "glad": 2.0, "graceful": 2.5, "happy": 3.0, "honest": 2.5,
     "incredible": 3.0, "joy": 2.5, "kind": 2.0, "love": 3.0, "lucky": 2.5,
     "marvelous": 3.0, "optimistic": 2.5, "peaceful": 2.0, "perfect": 3.0, "pleasant": 2.5,
-    "wonderful": 3.0, "zealous": 2.0, "zest": 2.5, "vibrant": 2.5, "victorious": 3.0
+    "wonderful": 3.0, "zealous": 2.0, "zest": 2.5, "vibrant": 2.5, "victorious": 3.0, "nice": 2.5,
+    "thanks": 3.0, "good" : 3.0, "great" : 3.0, "lovely" : 3.0
 };
 
 // Pre-populated neutral words with associated weights
@@ -29,13 +30,14 @@ let neutralWords = {
 };
 
 let emojiSentiment = {
-    "😊": 3.0, "😄": 3.0, "😍": 3.0, "🤩": 3.0, "👍": 2.5, "❤": 3.0, "😇": 3.0, // Positive emojis
+    "😊": 3.0, "😄": 3.0, "😍": 3.0, "🤩": 3.0, "👍": 2.5, "❤": 3.0, "😇": 3.0,  // Positive emojis
     "😢": -3.0, "😡": -3.0, "👎": -2.5, "😭": -3.0, "😓": -2.0, "😕": -3.0, // Negative emojis
     "😐": 0.0, "🤔": 0.0 // Neutral emojis
 };
 
 let zeroCount = 0;
 let fourCount = 0;
+let trainingIterations = 4;
 
 let apiBaseUrl = 'https://youtube.googleapis.com/youtube/v3';
 let key = "AIzaSyBav8jQwmVNxRFk4Q2FcviOHnUwbJjM8cU";
@@ -68,7 +70,6 @@ async function getTrainingDataFromCsv(pathToCsv) {
                 throw new Error("Parsed CSV data is empty or undefined");
             }
 
-
             // Filter to only keep columns 0 and 5 (ensure enough columns in row)
             let filteredData = allData.map(row => [row[0], row[1]]);
             console.log('Filtered Data:', filteredData);
@@ -76,12 +77,29 @@ async function getTrainingDataFromCsv(pathToCsv) {
             let tableSize = filteredData.length;
             console.log('Number Of Data Entries:', tableSize);
 
-            // Process each row and train the word lists
+            // Evenly split the data: 85% for training, 15% for testing
+            let trainDataSize = Math.floor(0.85 * tableSize);
+            let trainingData = [];
+            let testData = [];
+
             for (let i = 0; i < tableSize; i++) {
-                let label = parseInt(filteredData[i][0], 10);
+                // Evenly pick from both ends
+                if (i % 7 === 0) {
+                    testData.push(filteredData[i]);
+                } else {
+                    trainingData.push(filteredData[i]);
+                }
+            }
+
+            console.log('Training Data Size:', trainingData.length);
+            console.log('Test Data Size:', testData.length);
+
+            // Process each row in the training data and train the word lists
+            trainingData.forEach((row, index) => {
+                let label = parseInt(row[0], 10);
 
                 // Ignore invalid labels
-                if (label !== 0 && label !== 4) continue;
+                if (label !== 0 && label !== 4) return;
 
                 if (label === 0) zeroCount++;
                 if (label === 4) fourCount++;
@@ -89,18 +107,87 @@ async function getTrainingDataFromCsv(pathToCsv) {
                 // Convert label: 4 -> positive, 0 -> negative
                 label = label === 4 ? 1 : 0;
 
-                let text = filteredData[i][1];
+                let text = row[1];
                 // Vectorize text and update positive or negative word lists
                 vectorizeText(text, label);
-            }
+            });
 
             console.log('Zero Count:', zeroCount);
             console.log('Four Count:', fourCount);
 
             console.log('Positive Words:', positiveWords);
             console.log('Negative Words:', negativeWords);
+
+            // After training, test the model on the remaining 15%
+            for(let i = 0; i < trainingIterations; i++) {
+                testModel(testData);
+            }
+
         })
         .catch(error => console.error('Error fetching CSV file:', error));
+}
+
+function testModel(testData) {
+    console.log('Testing the model on the remaining 15% of the data...');
+
+    let correctPredictions = 0;
+    let totalPredictions = 0;
+
+    testData.forEach(row => {
+        let trueLabel = parseInt(row[0], 10);
+
+        // Convert label: 4 -> positive, 0 -> negative
+        trueLabel = trueLabel === 4 ? 1 : 0;
+
+        let text = row[1];
+        let predictedSentimentScore = calculateSentimentScore(text);
+
+        // Classify the comment based on the sentiment score
+        let predictedLabel = predictedSentimentScore > 0 ? 1 : 0;
+
+        // Check if the predicted label matches the true label
+        if (predictedLabel === trueLabel) {
+            correctPredictions++;
+        } else {
+            // Tune the model by adjusting word weights based on incorrect predictions
+            tuneModel(text, trueLabel);
+        }
+
+        totalPredictions++;
+    });
+
+    const accuracy = (correctPredictions / totalPredictions) * 100;
+    console.log(`Model accuracy on the test data: ${accuracy.toFixed(2)}%`);
+}
+
+function tuneModel(text, trueLabel) {
+    // Remove extra whitespace and punctuation, lowercasing everything for consistency
+    const words = text
+        .replace(/[^\w\s]/g, '') // Remove punctuation
+        .toLowerCase()           // Normalize to lowercase
+        .split(/\s+/);           // Split on any whitespace
+
+    words.forEach(word => {
+        if (trueLabel === 1) {
+            // If the true label is positive, increase the weight of positive words and decrease the weight of negative ones
+            if (positiveWords[word]) {
+                positiveWords[word] += 0.05; // Increase weight slightly for positive words
+            }
+            if (negativeWords[word]) {
+                negativeWords[word] = Math.max(negativeWords[word] - 0.05, 0); // Decrease weight for negative words, not below 0
+            }
+        } else if (trueLabel === 0) {
+            // If the true label is negative, increase the weight of negative words and decrease the weight of positive ones
+            if (negativeWords[word]) {
+                negativeWords[word] += 0.05; // Increase weight slightly for negative words
+            }
+            if (positiveWords[word]) {
+                positiveWords[word] = Math.max(positiveWords[word] - 0.05, 0); // Decrease weight for positive words, not below 0
+            }
+        }
+    });
+
+    console.log('Model tuned for this incorrect prediction');
 }
 
 function vectorizeText(text, label) {
@@ -150,10 +237,10 @@ function analyzeSentiments(commentsArray) {
         let commentSentiment = 'Neutral';
         if (weightedSentimentScore > 0.5) {
             commentSentiment = 'Positive';
-            positiveCount+=(1 + likeCount);
+            positiveCount += (1 + likeCount);
         } else if (weightedSentimentScore < -0.5) {
             commentSentiment = 'Negative';
-            negativeCount+=(1 + likeCount);
+            negativeCount += (1 + likeCount);
         }
 
         individualCommentData.push({
@@ -173,7 +260,7 @@ function analyzeSentiments(commentsArray) {
     let overallSentiment = 'Neutral';
     if (averageSentimentProbability > 0.8) {
         overallSentiment = 'Overwhelmingly Positive';
-    }else if (averageSentimentProbability > 0.5) {
+    } else if (averageSentimentProbability > 0.5) {
         overallSentiment = 'Positive';
     } else if (averageSentimentProbability < -0.5 && averageSentimentProbability > -0.2) {
         overallSentiment = 'Negative';
@@ -347,7 +434,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 document.addEventListener('DOMContentLoaded', function () {
     // Request the current video ID from the background script
-    chrome.runtime.sendMessage({ action: 'getVideoId' }, (response) => {
+    chrome.runtime.sendMessage({action: 'getVideoId'}, (response) => {
         const videoId = response.videoId;
         if (videoId) {
             // Trigger the sentiment analysis using the retrieved video ID

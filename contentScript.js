@@ -1,3 +1,41 @@
+let isModelTrained = false;
+let lastVideoId = null;
+
+// Wait for the model to be trained before proceeding with sentiment analysis
+async function initializeModelAndStartSentiment() {
+    return new Promise((resolve, reject) => {
+        // Check if model is already trained to avoid redundant calls
+        if (isModelTrained) {
+            resolve(true);  // Resolve immediately if model is trained
+            return;
+        }
+
+        // Request the background script to check the model training status
+        chrome.runtime.sendMessage({ action: 'checkModelTraining' }, (response) => {
+            if (response.modelTrained) {
+                isModelTrained = true;  // Mark model as trained
+                console.log("Model is already trained. Ready for sentiment analysis.");
+                resolve(true);  // Resolve the promise
+            } else {
+                console.error('Model is not trained.');
+                reject(false);  // Reject the promise if training fails
+            }
+        });
+    });
+}
+
+// Function to start sentiment analysis when the video ID changes
+async function startSentimentAnalysis() {
+    const videoId = getVideoIdFromUrl();
+    if (videoId && isModelTrained) {
+        console.log('Starting sentiment analysis for Video ID:', videoId);
+        await fetchYoutubeCommentsVideoId(videoId);  // Proceed with sentiment analysis
+    } else {
+        console.error('Model is not trained or no valid video ID found.');
+    }
+}
+
+
 // Function to inject sentiment score into the YouTube DOM
 function injectSentimentIntoPage(overallSentiment, positivityPercentage, sentimentData) {
     const existingSentiment = document.getElementById('sentiment-analysis');
@@ -32,32 +70,24 @@ function injectSentimentIntoPage(overallSentiment, positivityPercentage, sentime
 }
 
 
-
-
 // Listen for the message to start sentiment analysis
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === 'startSentimentAnalysis') {
-        startSentimentAnalysis();
+    if (request.action === 'startSentimentAnalysis' && isModelTrained) {
+        startSentimentAnalysis(); // Perform sentiment analysis if the model is trained
+    } else {
+        console.error('Model is not trained yet.');
     }
 });
 
-let lastVideoId = null;
 
-// Function to start sentiment analysis when the video ID changes
-function startSentimentAnalysis() {
-    const videoId = getVideoIdFromUrl();
-    if (videoId && videoId !== lastVideoId) {
-        lastVideoId = videoId; // Update the last video ID
-        console.log('Video ID found:', videoId);
-
-        // Trigger the sentiment analysis using the retrieved video ID
-        getTrainingDataFromCsv(chrome.runtime.getURL('trainingData/trainingData.csv')).then(() => {
-            fetchYoutubeCommentsVideoId(videoId);
-        }).catch(error => {
-            console.error('Error fetching CSV file:', error);
-        });
-    }
-}
+// // Function to start sentiment analysis when the video ID changes
+// function startSentimentAnalysis() {
+//     const videoId = getVideoIdFromUrl();
+//     if (videoId) {
+//         console.log('Starting sentiment analysis for Video ID:', videoId);
+//         fetchYoutubeCommentsVideoId(videoId);
+//     }
+// }
 
 // Function to detect URL changes (YouTube video changes) and trigger sentiment analysis
 function observeUrlChanges() {
@@ -87,20 +117,20 @@ function observeUrlChanges() {
 observeUrlChanges();
 
 // Function to start the sentiment analysis process
-function startSentimentAnalysis() {
-    const videoId = getVideoIdFromUrl();
-    if (videoId) {
-        console.log('Video ID found:', videoId);
-        // Trigger the sentiment analysis using the retrieved video ID
-        getTrainingDataFromCsv(chrome.runtime.getURL('trainingData/trainingData.csv')).then(() => {
-            fetchYoutubeCommentsVideoId(videoId);
-        }).catch(error => {
-            console.error('Error fetching CSV file:', error);
-        });
-    } else {
-        console.error('Unable to extract video ID from the URL.');
-    }
-}
+// function startSentimentAnalysis() {
+//     const videoId = getVideoIdFromUrl();
+//     if (videoId) {
+//         console.log('Video ID found:', videoId);
+//         // Trigger the sentiment analysis using the retrieved video ID
+//         getTrainingDataFromCsv(chrome.runtime.getURL('trainingData/trainingData.csv')).then(() => {
+//             fetchYoutubeCommentsVideoId(videoId);
+//         }).catch(error => {
+//             console.error('Error fetching CSV file:', error);
+//         });
+//     } else {
+//         console.error('Unable to extract video ID from the URL.');
+//     }
+// }
 
 // Function to extract video ID from YouTube URL
 function getVideoIdFromUrl() {
@@ -112,14 +142,14 @@ function getVideoIdFromUrl() {
 const videoId = getVideoIdFromUrl();
 if (videoId) {
     // Send message to background script to start sentiment analysis
-    chrome.runtime.sendMessage({ action: 'getVideoId' }, (response) => {
+    chrome.runtime.sendMessage({action: 'getVideoId'}, (response) => {
         const videoId = response.videoId;
         if (videoId) {
             // Fetch the sentiment analysis and inject the data into the YouTube page
             getTrainingDataFromCsv(chrome.runtime.getURL('trainingData/trainingData.csv'))
                 .then(() => {
                     fetchYoutubeCommentsVideoId(videoId).then((sentimentData) => {
-                        const { overallSentiment, positivityPercentage, individualCommentData } = sentimentData;
+                        const {overallSentiment, positivityPercentage, individualCommentData} = sentimentData;
                         injectSentimentIntoPage(overallSentiment, positivityPercentage, individualCommentData);
                     });
                 })
@@ -153,9 +183,8 @@ function retryFetchVideoId() {
 }
 
 function sendVideoId(videoId) {
-    chrome.runtime.sendMessage({ action: 'sendVideoId', videoId: videoId });
+    chrome.runtime.sendMessage({action: 'sendVideoId', videoId: videoId});
 }
-
 
 
 let allCommentsData = []; // Global variable to store all comments after sentiment analysis
@@ -296,9 +325,9 @@ async function modifyCommentSection(overallSentiment, overallSentimentProbabilit
     if (overallSentiment === 'Positive') {
         sentimentParagraph.innerHTML += `<span style="color:green;">Positive (${(overallSentimentProbability * 100).toFixed(2)}% positivity) 😄</span>`;
     } else if (overallSentiment === 'Negative') {
-        sentimentParagraph.innerHTML +=  `<span style="color:red;">Negative (${(overallSentimentProbability * 100).toFixed(2)}% positivity) 😡</span>`;
+        sentimentParagraph.innerHTML += `<span style="color:red;">Negative (${(overallSentimentProbability * 100).toFixed(2)}% positivity) 😡</span>`;
     } else {
-        sentimentParagraph.innerHTML +=  `<span style="color:gray;">Neutral (${(overallSentimentProbability * 100).toFixed(2)}% positivity) 😐</span>`;
+        sentimentParagraph.innerHTML += `<span style="color:gray;">Neutral (${(overallSentimentProbability * 100).toFixed(2)}% positivity) 😐</span>`;
     }
 
 
@@ -342,19 +371,16 @@ function observeComments() {
                 // Only modify the comment section once
                 if (!isSentimentAdded) {
                     // Check if sentiment data is available and inject it
-                    chrome.runtime.sendMessage({ action: 'getVideoId' }, (response) => {
+                    chrome.runtime.sendMessage({action: 'getVideoId'}, (response) => {
                         const videoId = response.videoId;
                         if (videoId) {
-                            getTrainingDataFromCsv(chrome.runtime.getURL('trainingData/trainingData.csv')).then(() => {
                                 fetchYoutubeCommentsVideoId(videoId);
                                 // Create an observer instance
                                 const observer = new MutationObserver(observerCallback);
 
                                 // Start observing
                                 observer.observe(targetNode, observerConfig);
-                            }).catch(error => {
-                                console.error('Error fetching CSV file:', error);
-                            });
+
                         } else {
                             console.error('No video ID found in the response.');
                         }
@@ -374,26 +400,35 @@ function observeComments() {
 // window.addEventListener('refresh', observeComments);
 
 // Add event listeners to the filter buttons
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('filter-all').addEventListener('click', () => filterComments('all'));
     document.getElementById('filter-positive').addEventListener('click', () => filterComments('positive'));
     document.getElementById('filter-neutral').addEventListener('click', () => filterComments('neutral'));
     document.getElementById('filter-negative').addEventListener('click', () => filterComments('negative'));
 
+
+    initializeModelAndStartSentiment();
+
     retryFetchVideoId();
 
+
     // Request the current video ID from the background script
-    chrome.runtime.sendMessage({ action: 'getVideoId' }, (response) => {
-        const videoId = response.videoId;
-        if (videoId) {
-            // Trigger the sentiment analysis using the retrieved video ID
-            getTrainingDataFromCsv(chrome.runtime.getURL('trainingData/trainingData.csv')).then(() => {
-                fetchYoutubeCommentsVideoId(videoId);
-            }).catch(error => {
-                console.error('Error fetching CSV file:', error);
-            });
-        } else {
-            console.error('No video ID found in the response.');
-        }
+    chrome.runtime.sendMessage({action: 'getVideoId'}, (response) => {
+        chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+            const videoId = response.videoId;
+            if (videoId) {
+                if (request.action === 'startSentimentAnalysis') {
+                    fetchYoutubeCommentsVideoId(videoId)
+
+                        .catch(error => {
+                            console.error('Error Performing Analysis:', error);
+                        });
+                }
+            } else {
+                console.error('No video ID found in the response.');
+            }
+        });
     });
 });
+
+
