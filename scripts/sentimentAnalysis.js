@@ -6,9 +6,40 @@ let negativeWords = {
     "corrupt": 3.0, "cruel": 3.0, "damage": 2.0, "danger": 2.5, "degrade": 2.0,
     "disgusting": 3.0, "dreadful": 3.0, "evil": 3.0, "fear": 2.5, "frightening": 2.5,
     "gloomy": 2.0, "greed": 2.0, "harm": 2.0, "hate": 3.0, "horrible": 3.0,
-    "worthless": 2.5, "wreck": 2.0, "ugly": 2.0, "untrustworthy": 2.5, "vicious": 3.0
+    "worthless": 2.5, "wreck": 2.0, "ugly": 2.0, "untrustworthy": 2.5, "vicious": 3.0,
+    "abandon": 2.0, "agony": 2.5, "anguish": 3.0, "annoying": 2.0, "appalling": 3.0,
+    "arrogant": 2.5, "ashamed": 2.5, "atrophy": 3.0, "avoid": 2.0, "awful": 2.5,
+    "backstab": 2.5, "baffling": 2.0, "bankrupt": 3.0, "barbaric": 3.0, "betrayed": 2.5,
+    "bleak": 2.5, "blunder": 2.0, "brutal": 3.0, "bug": 1.5, "burden": 2.5,
+    "callous": 2.5, "catastrophic": 3.0, "chaotic": 2.5, "clumsy": 2.0, "complaint": 2.0,
+    "contempt": 3.0, "corrupt": 3.0, "coward": 2.5, "creepy": 2.5, "cringe": 2.0,
+    "crisis": 2.5, "criticize": 2.0, "cruelty": 3.0, "cry": 2.5, "cynical": 2.5,
+    "dangerous": 2.5, "deadly": 3.0, "defeat": 2.5, "defective": 2.0, "deformed": 2.5,
+    "depressing": 3.0, "despair": 3.0, "desperate": 2.5, "destruction": 3.0, "detest": 2.5,
+    "devastating": 3.0, "disaster": 3.0, "disastrous": 3.0, "discomfort": 2.0, "disdain": 2.5,
+    "disgust": 3.0, "dislike": 2.5, "dismal": 2.5, "distress": 2.5, "disturbing": 3.0,
+    "doomed": 2.5, "dread": 2.5, "dull": 2.0, "dysfunction": 2.5, "embarrass": 2.5,
+    "enemy": 3.0, "enraged": 3.0, "envious": 2.0, "erode": 2.5, "fail": 2.5,
+    "fake": 2.5, "fatal": 3.0, "flaw": 2.0, "fool": 2.5, "fraud": 3.0,
+    "frustration": 2.5, "furious": 3.0, "grief": 3.0, "gross": 2.5, "guilt": 2.5,
+    "hardship": 2.5, "heartbreaking": 3.0, "helpless": 2.5, "hostile": 2.5, "humiliate": 3.0,
+    "hypocrite": 3.0, "idiot": 2.5, "ignorant": 2.5, "immoral": 2.5, "impolite": 2.0,
+    "incompetent": 2.5, "inconsistent": 2.0, "inept": 2.5, "infuriating": 3.0, "insult": 3.0,
+    "intolerable": 3.0, "irritating": 2.5, "jealous": 2.5, "lament": 2.5, "lazy": 2.0,
+    "liar": 3.0, "loathe": 3.0, "loser": 2.5, "lousy": 2.0, "malice": 3.0,
+    "mediocre": 2.0, "mess": 2.0, "miserable": 3.0, "misfortune": 2.5, "mistake": 2.0,
+    "moody": 2.0, "mourn": 2.5, "murder": 3.0, "nasty": 3.0, "neglect": 2.5,
+    "nonsense": 2.5, "obnoxious": 2.5, "offensive": 2.5, "pain": 2.5, "pathetic": 3.0,
+    "pessimistic": 2.5, "petty": 2.0, "pitiful": 2.5, "poison": 2.5, "prejudice": 2.5,
+    "problem": 2.0, "regret": 2.5, "repulsive": 3.0, "resent": 2.5, "rotten": 2.5,
+    "rude": 2.0, "ruin": 3.0, "sabotage": 2.5, "sad": 2.5, "selfish": 2.5,
+    "shame": 2.5, "sick": 2.0, "sinister": 3.0, "skeptical": 2.0, "stupid": 2.5,
+    "substandard": 2.0, "suffering": 3.0, "terrible": 3.0, "threat": 2.5, "toxic": 3.0,
+    "tragic": 3.0, "trash": 2.5, "ugliness": 2.5, "unbearable": 2.5, "undesirable": 2.0,
+    "unfortunate": 2.5, "unhappy": 2.0, "unpleasant": 2.0, "unreliable": 2.5, "upset": 2.5,
+    "useless": 2.5, "victim": 2.0, "violent": 3.0, "vulgar": 2.5, "weak": 2.0,
+    "wicked": 3.0, "worried": 2.5, "worthless": 2.5, "wrecked": 2.0, "wrong": 2.0
 };
-
 // Pre-populated positive words with associated weights
 let positiveWords = {
     "amazing": 3.0, "awesome": 3.0, "beautiful": 2.5, "bliss": 2.5, "brilliant": 3.0,
@@ -16,8 +47,20 @@ let positiveWords = {
     "fantastic": 3.0, "glad": 2.0, "graceful": 2.5, "happy": 3.0, "honest": 2.5,
     "incredible": 3.0, "joy": 2.5, "kind": 2.0, "love": 3.0, "lucky": 2.5,
     "marvelous": 3.0, "optimistic": 2.5, "peaceful": 2.0, "perfect": 3.0, "pleasant": 2.5,
-    "wonderful": 3.0, "zealous": 2.0, "zest": 2.5, "vibrant": 2.5, "victorious": 3.0, "nice": 2.5,
-    "thanks": 3.0, "good" : 3.0, "great" : 3.0, "lovely" : 3.0
+    "wonderful": 3.0, "zealous": 2.0, "zest": 2.5, "vibrant": 2.5, "victorious": 3.0,
+    "nice": 2.5, "thanks": 3.0, "good": 3.0, "great": 3.0, "lovely": 3.0,
+    "admire": 3.0, "adorable": 2.5, "adventurous": 2.5, "affectionate": 3.0, "ambitious": 2.5,
+    "appreciative": 2.5, "astounding": 3.0, "authentic": 2.5, "benevolent": 2.5, "blissful": 3.0,
+    "calm": 2.0, "captivating": 3.0, "charming": 2.5, "compassionate": 2.5, "confident": 2.5,
+    "courageous": 2.5, "creative": 2.5, "dazzling": 3.0, "dedicated": 2.5, "eager": 2.0,
+    "enthusiastic": 2.5, "faithful": 2.5, "flourishing": 2.5, "friendly": 2.5, "generous": 2.5,
+    "genius": 3.0, "grateful": 2.5, "harmonious": 2.5, "honorable": 2.5, "inspiring": 3.0,
+    "intelligent": 3.0, "jubilant": 3.0, "lively": 2.5, "magical": 3.0, "motivated": 2.5,
+    "outstanding": 3.0, "phenomenal": 3.0, "playful": 2.5, "positive": 2.5, "prosperous": 2.5,
+    "radiant": 3.0, "refreshing": 2.5, "remarkable": 3.0, "resourceful": 2.5, "respected": 2.5,
+    "rewarding": 2.5, "satisfying": 2.5, "spectacular": 3.0, "successful": 3.0, "supportive": 2.5,
+    "thrilled": 3.0, "trustworthy": 2.5, "uplifting": 2.5, "visionary": 2.5, "warmhearted": 2.5,
+    "worthy": 2.5, "youthful": 2.5
 };
 
 // Pre-populated neutral words with associated weights
@@ -26,18 +69,38 @@ let neutralWords = {
     "document": 1.0, "event": 1.0, "fact": 1.0, "general": 1.0, "group": 1.0,
     "information": 1.0, "item": 1.0, "list": 1.0, "number": 1.0, "object": 1.0,
     "place": 1.0, "reference": 1.0, "schedule": 1.0, "table": 1.0, "unit": 1.0,
-    "window": 1.0, "year": 1.0, "zone": 1.0, "medium": 1.0, "overview": 1.0
+    "window": 1.0, "year": 1.0, "zone": 1.0, "medium": 1.0, "overview": 1.0,
+    "analysis": 1.0, "application": 1.0, "article": 1.0, "asset": 1.0, "baseline": 1.0,
+    "category": 1.0, "center": 1.0, "collection": 1.0, "component": 1.0, "concept": 1.0,
+    "connection": 1.0, "context": 1.0, "definition": 1.0, "device": 1.0, "element": 1.0,
+    "feature": 1.0, "framework": 1.0, "goal": 1.0, "instance": 1.0, "layer": 1.0,
+    "layout": 1.0, "machine": 1.0, "mechanism": 1.0, "method": 1.0, "module": 1.0,
+    "object": 1.0, "operation": 1.0, "parameter": 1.0, "process": 1.0, "program": 1.0,
+    "project": 1.0, "protocol": 1.0, "report": 1.0, "response": 1.0, "role": 1.0,
+    "section": 1.0, "session": 1.0, "specification": 1.0, "structure": 1.0, "system": 1.0,
+    "task": 1.0, "tool": 1.0, "transaction": 1.0, "user": 1.0, "utility": 1.0,
+    "value": 1.0, "variable": 1.0, "version": 1.0, "workflow": 1.0
 };
 
 let emojiSentiment = {
-    "😊": 3.0, "😄": 3.0, "😍": 3.0, "🤩": 3.0, "👍": 2.5, "❤": 3.0, "😇": 3.0,  // Positive emojis
-    "😢": -3.0, "😡": -3.0, "👎": -2.5, "😭": -3.0, "😓": -2.0, "😕": -3.0, // Negative emojis
-    "😐": 0.0, "🤔": 0.0 // Neutral emojis
+    // Positive emojis
+    "😊": 3.0, "😄": 3.0, "😍": 3.0, "🤩": 3.0, "👍": 2.5, "❤": 3.0, "😇": 3.0,
+    "🎉": 3.0, "🎊": 3.0, "💖": 3.0, "🌟": 3.0, "👏": 2.5, "✨": 3.0, "🎈": 3.0,
+    "🙌": 3.0, "🤗": 3.0, "💪": 2.5, "👑": 3.0, "💫": 3.0,
+
+    // Negative emojis
+    "😢": -3.0, "😡": -3.0, "👎": -2.5, "😭": -3.0, "😓": -2.0, "😕": -3.0,
+    "😠": -2.5, "💔": -3.0, "😣": -3.0, "😞": -2.5, "🤬": -3.0, "😨": -2.0, "😫": -3.0,
+    "😱": -2.5, "😖": -3.0, "😔": -2.5, "😤": -2.5, "💢": -2.5,
+
+    // Neutral emojis
+    "😐": 0.0, "🤔": 0.0, "🧐": 0.0, "😑": 0.0, "🤨": 0.0, "😶": 0.0,
+    "📝": 0.0, "📄": 0.0, "💼": 0.0, "📊": 0.0, "📈": 0.0, "📉": 0.0
 };
 
 let zeroCount = 0;
 let fourCount = 0;
-let trainingIterations = 4;
+let trainingIterations = 6;
 
 let apiBaseUrl = 'https://youtube.googleapis.com/youtube/v3';
 let key = "AIzaSyBav8jQwmVNxRFk4Q2FcviOHnUwbJjM8cU";
@@ -171,18 +234,18 @@ function tuneModel(text, trueLabel) {
         if (trueLabel === 1) {
             // If the true label is positive, increase the weight of positive words and decrease the weight of negative ones
             if (positiveWords[word]) {
-                positiveWords[word] += 0.05; // Increase weight slightly for positive words
+                positiveWords[word] += 0.1; // Increase weight slightly for positive words
             }
             if (negativeWords[word]) {
-                negativeWords[word] = Math.max(negativeWords[word] - 0.05, 0); // Decrease weight for negative words, not below 0
+                negativeWords[word] = Math.max(negativeWords[word] - 0.1, 0); // Decrease weight for negative words, not below 0
             }
         } else if (trueLabel === 0) {
             // If the true label is negative, increase the weight of negative words and decrease the weight of positive ones
             if (negativeWords[word]) {
-                negativeWords[word] += 0.05; // Increase weight slightly for negative words
+                negativeWords[word] += 0.1; // Increase weight slightly for negative words
             }
             if (positiveWords[word]) {
-                positiveWords[word] = Math.max(positiveWords[word] - 0.05, 0); // Decrease weight for positive words, not below 0
+                positiveWords[word] = Math.max(positiveWords[word] - 0.1, 0); // Decrease weight for positive words, not below 0
             }
         }
     });
