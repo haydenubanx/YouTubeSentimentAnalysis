@@ -11,16 +11,26 @@ async function initializeModelAndStartSentiment() {
         }
 
         // Request the background script to check the model training status
-        chrome.runtime.sendMessage({ action: 'checkModelTraining' }, (response) => {
-            if (response.modelTrained) {
-                isModelTrained = true;  // Mark model as trained
-                console.log("Model is already trained. Ready for sentiment analysis.");
-                resolve(true);  // Resolve the promise
-            } else {
-                console.error('Model is not trained.');
-                reject(false);  // Reject the promise if training fails
-            }
-        });
+        // chrome.runtime.sendMessage({action: 'checkModelTraining'}, (response) => {
+        //     if (response.modelTrained) {
+        //         isModelTrained = true;  // Mark model as trained
+        //         console.log("Model is already trained. Ready for sentiment analysis.");
+        //         resolve(true);  // Resolve the promise
+        //     } else {
+        //         console.error('Model is not trained.');
+        //         reject(false);  // Reject the promise if training fails
+        //     }
+        // });
+    });
+}
+
+function trainModel() {
+    // Logic to train the model (load CSV, process data, etc.)
+    getTrainingDataFromCsv('trainingData/trainingData.csv').then(() => {
+        isModelTrained = true;
+        console.log("Model trained successfully.");
+    }).catch(error => {
+        console.error('Error during model training:', error);
     });
 }
 
@@ -127,7 +137,7 @@ function getVideoIdFromUrl() {
         console.log('Extracted video ID:', videoId);
         return videoId;
     } else {
-        console.error('Unable to extract video ID from the URL.');
+        // console.error('Unable to extract video ID from the URL.');
         return null;
     }
 }
@@ -154,8 +164,6 @@ if (videoId) {
             console.error('No video ID found in the response.');
         }
     });
-} else {
-    console.error('Unable to extract video ID from the URL.');
 }
 
 function retryFetchVideoId() {
@@ -171,7 +179,7 @@ function retryFetchVideoId() {
             console.error('Error fetching CSV file:', error);
         });
     } else {
-        console.warn('Unable to extract video ID from the URL. Retrying in 1 second...');
+        console.info('Unable to extract video ID from the URL. Retrying in 1 second...');
         setTimeout(retryFetchVideoId, 1000);  // Retry after 1 seconds
     }
 }
@@ -179,7 +187,6 @@ function retryFetchVideoId() {
 function sendVideoId(videoId) {
     chrome.runtime.sendMessage({action: 'sendVideoId', videoId: videoId});
 }
-
 
 
 let allCommentsData = []; // Global variable to store all comments after sentiment analysis
@@ -305,7 +312,7 @@ function appendToCSV(newEntry) {
         csvData += newEntry; // Append the new entry to the CSV data
 
         // Store the updated CSV data back into chrome.storage.local
-        chrome.storage.local.set({ csvData: csvData }, () => {
+        chrome.storage.local.set({csvData: csvData}, () => {
             console.log('CSV data updated in storage.');
         });
     });
@@ -468,12 +475,12 @@ function observeComments() {
                     chrome.runtime.sendMessage({action: 'getVideoId'}, (response) => {
                         const videoId = response.videoId;
                         if (videoId) {
-                                fetchYoutubeCommentsVideoId(videoId);
-                                // Create an observer instance
-                                const observer = new MutationObserver(observerCallback);
+                            fetchYoutubeCommentsVideoId(videoId);
+                            // Create an observer instance
+                            const observer = new MutationObserver(observerCallback);
 
-                                // Start observing
-                                observer.observe(targetNode, observerConfig);
+                            // Start observing
+                            observer.observe(targetNode, observerConfig);
 
                         } else {
                             console.error('No video ID found in the response.');
@@ -523,6 +530,33 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
+});
+
+
+chrome.runtime.onInstalled.addListener(() => {
+    console.log("Extension installed/updated, starting model training...");
+    trainModel();  // Train model once during installation or update
+});
+
+// chrome.runtime.onStartup.addListener(() => {
+//     console.log("Chrome started, training the model...");
+//     trainModel();  // Train model on Chrome startup
+// });
+
+// Listener to respond to content scripts about model training status
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === 'checkModelTraining') {
+        sendResponse({modelTrained: isModelTrained});
+    }
+
+    if (message.action === 'trainModel') {
+        if (!isModelTrained) {
+            trainModel();  // If model isn't trained yet, start the training process
+            sendResponse({modelTrained: false});
+        } else {
+            sendResponse({modelTrained: true});
+        }
+    }
 });
 
 

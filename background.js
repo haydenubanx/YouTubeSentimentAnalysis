@@ -1,40 +1,3 @@
-let isModelTrained = false;
-
-function trainModel() {
-    // Logic to train the model (load CSV, process data, etc.)
-    getTrainingDataFromCsv('path_to_your_csv').then(() => {
-        isModelTrained = true;
-        console.log("Model trained successfully.");
-    }).catch(error => {
-        console.error('Error during model training:', error);
-    });
-}
-
-chrome.runtime.onInstalled.addListener(() => {
-    console.log("Extension installed/updated, starting model training...");
-    trainModel();  // Train model once during installation or update
-});
-
-chrome.runtime.onStartup.addListener(() => {
-    console.log("Chrome started, training the model...");
-    trainModel();  // Train model on Chrome startup
-});
-
-// Listener to respond to content scripts about model training status
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === 'checkModelTraining') {
-        sendResponse({ modelTrained: isModelTrained });
-    }
-
-    if (message.action === 'trainModel') {
-        if (!isModelTrained) {
-            trainModel();  // If model isn't trained yet, start the training process
-            sendResponse({ modelTrained: false });
-        } else {
-            sendResponse({ modelTrained: true });
-        }
-    }
-});
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (changeInfo.status === 'complete' && tab.url.includes("youtube.com/watch")) {
@@ -64,15 +27,9 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         currentVideoId = message.videoId;  // Update video ID
     }
     // Handle model training
-    else if (message.action === 'trainModel' && !isModelTrained) {
-        console.log("Training the model...");
-        const csvUrl = chrome.runtime.getURL('trainingData/trainingData.csv'); // Ensure correct CSV path
-        await getTrainingDataFromCsv(csvUrl)
-            .then(trainingData => {
-                // Continue with model training
+    else if (message.action === 'trainModel') {
                 console.log('Training data loaded:', trainingData);
-                sendResponse({ modelTrained: true });
-            })
+                sendResponse({ modelTrained: true })
             .catch(error => {
                 console.error('Error loading training data:', error);
                 sendResponse({ modelTrained: false });
@@ -100,29 +57,17 @@ chrome.tabs.onActivated.addListener(activeInfo => {
     });
 });
 
-chrome.runtime.onInstalled.addListener(() => {
-    let csvUrl = chrome.runtime.getURL('trainingData/trainingData.csv');
-    fetch(csvUrl)
-        .then(response => response.text())
-        .then(csvContent => {
-            chrome.storage.local.set({ csvData: csvContent }, () => {
-                console.log('CSV data loaded into local storage.');
-            });
-        })
-        .catch(error => console.error('Error loading CSV:', error));
-});
-
-// Listener to append new sentiment data to the CSV
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === 'appendToCSV') {
-        appendToCSV(request.newEntry);
-        sendResponse({ success: true });
-    } else if (request.action === 'getCsvData') {
-        getCsvData();
-        sendResponse({ success: true });
-    }
-    return true;  // Keep the message channel open for async responses
-});
+// chrome.runtime.onInstalled.addListener(() => {
+//     let csvUrl = chrome.runtime.getURL('trainingData/trainingData.csv');
+//     fetch(csvUrl)
+//         .then(response => response.text())
+//         .then(csvContent => {
+//             chrome.storage.local.set({ csvData: csvContent }, () => {
+//                 console.log('CSV data loaded into local storage.');
+//             });
+//         })
+//         .catch(error => console.error('Error loading CSV:', error));
+// });
 
 
 // Run sentiment analysis when the extension button is clicked
@@ -148,29 +93,12 @@ chrome.runtime.onInstalled.addListener(() => {
             }
             return response.text();
         })
-        .then(csvContent => {
-            chrome.storage.local.set({ csvData: csvContent }, () => {
-                console.log('CSV data loaded into local storage.');
-            });
-        })
+        // .then(csvContent => {
+        //     chrome.storage.local.set({ csvData: csvContent }, () => {
+        //         console.log('CSV data loaded into local storage.');
+        //     });
+        // })
         .catch(error => {
             console.error('Error loading CSV:', error);
         });
-});
-
-// Function to append new data to the CSV in local storage
-function appendToCSV(newEntry) {
-    chrome.storage.local.get(['csvData'], (result) => {
-        let csvData = result.csvData || ''; // Retrieve existing CSV data or initialize
-        csvData += newEntry; // Append the new entry
-
-        // Store the updated CSV data
-        chrome.storage.local.set({ csvData: csvData }, () => {
-            console.log('CSV updated in storage.');
-        });
-    });
-}
-
-chrome.storage.local.get(['csvData'], (result) => {
-    console.log('Stored CSV Data:', result.csvData);
 });
