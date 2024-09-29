@@ -1,6 +1,30 @@
 let isModelTrained = false;
 let lastVideoId = null;
 
+
+async function sendCommentToDatabase(comment, sentiment) {
+    // API endpoint (the URL to your PHP script)
+    const apiUrl = 'https://haydeneubanks.co.uk/includes/DbConnection/apiEndpoint.php';
+
+    const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            sentiment: sentiment === 'positive' ? 4 : 0,  // 4 for positive, 0 for negative
+            comment: comment.comment,                    // Send comment text
+        }),
+    });
+
+    const result = await response.json();
+    if (result.success) {
+        console.log('Comment saved successfully');
+    } else {
+        console.error('Failed to save comment:', result.error);
+    }
+}
+
 // Wait for the model to be trained before proceeding with sentiment analysis
 async function initializeModelAndStartSentiment() {
     return new Promise((resolve, reject) => {
@@ -277,6 +301,8 @@ function displayFilteredComments(comments) {
 }
 
 // Function to update comment sentiment and save it to the CSV
+
+// Function to update comment sentiment and save it to the CSV
 function updateCommentSentiment(commentData, newSentiment, commentElement) {
     const label = newSentiment === 'positive' ? 4 : 0;
     const maxPositivity = newSentiment === 'positive' ? 1.0 : 0.0; // Max or min positivity based on sentiment
@@ -289,8 +315,8 @@ function updateCommentSentiment(commentData, newSentiment, commentElement) {
     // Update the underlying comment data (allCommentsData)
     updateCommentData(commentData, newSentiment, maxPositivity);
 
-    // Append the new sentiment data to the CSV
-    appendToCSV(label, commentData.comment);
+    // Send the updated comment to the MySQL database
+    sendCommentToDatabase(commentData, newSentiment);
 }
 
 // Function to update the underlying comment data
@@ -305,18 +331,6 @@ function updateCommentData(commentData, newSentiment, maxPositivity) {
     }
 }
 
-// Function to append data to the CSV file
-function appendToCSV(newEntry) {
-    chrome.storage.local.get(['csvData'], (result) => {
-        let csvData = result.csvData || ''; // Retrieve existing CSV data or initialize if empty
-        csvData += newEntry; // Append the new entry to the CSV data
-
-        // Store the updated CSV data back into chrome.storage.local
-        chrome.storage.local.set({csvData: csvData}, () => {
-            console.log('CSV data updated in storage.');
-        });
-    });
-}
 
 // Function to filter comments based on sentiment
 function filterComments(filter) {
