@@ -138,6 +138,99 @@ function parseCSV(csvContent) {
     }).data;
 }
 
+
+async function fetchCommentsFromDatabase() {
+    const apiUrl = 'https://haydeneubanks.co.uk/includes/DbConnection/apiGetComments.php';
+
+    return fetch(apiUrl)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Failed to fetch database comments. Status: ${response.status}`);
+            }
+            return response.json();  // Parse JSON response
+        })
+        .then(data => {
+            // Ensure the database data has the correct format (array of [sentiment, comment])
+            return data.map(comment => [parseInt(comment.sentiment, 10), comment.comment_text]);
+        })
+        .catch(error => {
+            console.error('Error fetching database comments:', error);
+            return [];  // Return empty array in case of error
+        });
+}
+
+async function getTrainingDataFromCsvAndDatabase(pathToCsv) {
+    zeroCount = 0;
+    fourCount = 0;
+
+    // Fetch CSV data
+    const csvDataPromise = fetch(pathToCsv)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.text();
+        })
+        .then(csvContent => {
+            console.log("CSV Content Loaded Successfully");
+            let allData = parseCSV(csvContent); // Parse CSV data
+            return allData.map(row => [parseInt(row[0], 10), row[1]]); // Ensure column 0 (label) is integer
+        });
+
+    // Fetch database comments
+    const dbDataPromise = fetchCommentsFromDatabase();
+
+    // Wait for both CSV and database data to be ready
+    return Promise.all([csvDataPromise, dbDataPromise])
+        .then(([csvData, dbData]) => {
+            let allTrainingData = [...csvData, ...dbData];  // Merge CSV and DB data
+            console.log('Combined CSV and Database Data:', allTrainingData);
+
+            // Split the data into training and test sets (85% for training, 15% for testing)
+            let trainDataSize = Math.floor(0.85 * allTrainingData.length);
+            let trainingData = [];
+            let testData = [];
+
+            for (let i = 0; i < allTrainingData.length; i++) {
+                // Evenly pick from both ends
+                if (i % 7 === 0) {
+                    testData.push(allTrainingData[i]);
+                } else {
+                    trainingData.push(allTrainingData[i]);
+                }
+            }
+
+            // Process each row in the training data and train the word lists
+            trainingData.forEach((row, index) => {
+                let label = parseInt(row[0], 10);
+
+                // Ignore invalid labels
+                if (label !== 0 && label !== 4) return;
+
+                if (label === 0) zeroCount++;
+                if (label === 4) fourCount++;
+
+                // Convert label: 4 -> positive, 0 -> negative
+                label = label === 4 ? 1 : 0;
+
+                let text = row[1];
+                // Vectorize text and update positive or negative word lists
+                vectorizeText(text, label);
+            });
+
+            console.log('Zero Count:', zeroCount);
+            console.log('Four Count:', fourCount);
+            console.log('Positive Words:', positiveWords);
+            console.log('Negative Words:', negativeWords);
+
+            // After training, test the model on the remaining 15%
+            for (let i = 0; i < trainingIterations; i++) {
+                testModel(testData);
+            }
+        })
+        .catch(error => console.error('Error fetching training data:', error));
+}
+
 async function getTrainingDataFromCsv(pathToCsv) {
     zeroCount = 0;
     fourCount = 0;
@@ -259,18 +352,18 @@ function tuneModel(text, trueLabel) {
         if (trueLabel === 1) {
             // If the true label is positive, increase the weight of positive words and decrease the weight of negative ones
             if (positiveWords[word]) {
-                positiveWords[word] += 0.1; // Increase weight slightly for positive words
+                positiveWords[word] += 0.5; // Increase weight slightly for positive words
             }
             if (negativeWords[word]) {
-                negativeWords[word] = Math.max(negativeWords[word] - 0.1, 0); // Decrease weight for negative words, not below 0
+                negativeWords[word] = Math.max(negativeWords[word] - 0.5, 0); // Decrease weight for negative words, not below 0
             }
         } else if (trueLabel === 0) {
             // If the true label is negative, increase the weight of negative words and decrease the weight of positive ones
             if (negativeWords[word]) {
-                negativeWords[word] += 0.1; // Increase weight slightly for negative words
+                negativeWords[word] += 0.5; // Increase weight slightly for negative words
             }
             if (positiveWords[word]) {
-                positiveWords[word] = Math.max(positiveWords[word] - 0.1, 0); // Decrease weight for positive words, not below 0
+                positiveWords[word] = Math.max(positiveWords[word] - 0.5, 0); // Decrease weight for positive words, not below 0
             }
         }
     });
@@ -288,7 +381,7 @@ function vectorizeText(text, label) {
     words.forEach(word => {
         if (label === 1) {
             // Make positive words have an equal or slightly larger weight
-            positiveWords[word] = (positiveWords[word] || 1.0) + 1.25; // Adjusted to 1.0 for balance
+            positiveWords[word] = (positiveWords[word] || 1.0) + 1.5; // Adjusted to 1.0 for balance
         } else if (label === 0) {
             // Reduce the impact of negative words to make it less biased
             negativeWords[word] = (negativeWords[word] || 1.0) + 0.7; // Adjusted to 1.0 for balance
@@ -526,7 +619,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const videoId = response.videoId;
         if (videoId) {
             // Trigger the sentiment analysis using the retrieved video ID
-            getTrainingDataFromCsv(chrome.runtime.getURL('trainingData/trainingData.csv')).then(() => {
+            getTrainingDataFromCsvAndDatabase(chrome.runtime.getURL('trainingData/trainingData.csv')).then(() => {
                 fetchYoutubeCommentsVideoId(videoId);
             }).catch(error => {
                 console.error('Error fetching CSV file:', error);

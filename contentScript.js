@@ -3,7 +3,6 @@ let lastVideoId = null;
 
 
 async function sendCommentToDatabase(comment, sentiment) {
-    // API endpoint (the URL to your PHP script)
     const apiUrl = 'https://haydeneubanks.co.uk/includes/DbConnection/apiEndpoint.php';
 
     const response = await fetch(apiUrl, {
@@ -50,7 +49,7 @@ async function initializeModelAndStartSentiment() {
 
 function trainModel() {
     // Logic to train the model (load CSV, process data, etc.)
-    getTrainingDataFromCsv('trainingData/trainingData.csv').then(() => {
+    getTrainingDataFromCsvAndDatabase('trainingData/trainingData.csv').then(() => {
         isModelTrained = true;
         console.log("Model trained successfully.");
     }).catch(error => {
@@ -174,7 +173,7 @@ if (videoId) {
         const videoId = response.videoId;
         if (videoId) {
             // Fetch the sentiment analysis and inject the data into the YouTube page
-            getTrainingDataFromCsv(chrome.runtime.getURL('trainingData/trainingData.csv'))
+            getTrainingDataFromCsvAndDatabase(chrome.runtime.getURL('trainingData/trainingData.csv'))
                 .then(() => {
                     fetchYoutubeCommentsVideoId(videoId).then((sentimentData) => {
                         const {overallSentiment, positivityPercentage, individualCommentData} = sentimentData;
@@ -197,7 +196,7 @@ function retryFetchVideoId() {
         console.log('Video ID found:', videoId);
         sendVideoId(videoId);
         // Trigger the sentiment analysis using the retrieved video ID
-        getTrainingDataFromCsv(chrome.runtime.getURL('trainingData/trainingData.csv')).then(() => {
+        getTrainingDataFromCsvAndDatabase(chrome.runtime.getURL('trainingData/trainingData.csv')).then(() => {
             fetchYoutubeCommentsVideoId(videoId);
         }).catch(error => {
             console.error('Error fetching CSV file:', error);
