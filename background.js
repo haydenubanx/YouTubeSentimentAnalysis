@@ -66,16 +66,19 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     // Handle model training
     else if (message.action === 'trainModel' && !isModelTrained) {
         console.log("Training the model...");
-        await getTrainingDataFromCsv(chrome.runtime.getURL('trainingData/trainingData.csv')).then(() => {
-            isModelTrained = true;  // Mark the model as trained
-            console.log("Model trained successfully.");
-            sendResponse({ modelTrained: true });  // Respond after training
-        }).catch(error => {
-            console.error('Error during model training:', error);
-            sendResponse({ modelTrained: false });
-        });
-        return true;  // Keep the message channel open until response is sent
+        const csvUrl = chrome.runtime.getURL('trainingData/trainingData.csv'); // Ensure correct CSV path
+        await getTrainingDataFromCsv(csvUrl)
+            .then(trainingData => {
+                // Continue with model training
+                console.log('Training data loaded:', trainingData);
+                sendResponse({ modelTrained: true });
+            })
+            .catch(error => {
+                console.error('Error loading training data:', error);
+                sendResponse({ modelTrained: false });
+            });
     }
+    return true;   // Keep the message channel open until response is sent
 });
 
 // Detect when a tab becomes active and check if it's a YouTube video tab
@@ -97,6 +100,31 @@ chrome.tabs.onActivated.addListener(activeInfo => {
     });
 });
 
+chrome.runtime.onInstalled.addListener(() => {
+    let csvUrl = chrome.runtime.getURL('trainingData/trainingData.csv');
+    fetch(csvUrl)
+        .then(response => response.text())
+        .then(csvContent => {
+            chrome.storage.local.set({ csvData: csvContent }, () => {
+                console.log('CSV data loaded into local storage.');
+            });
+        })
+        .catch(error => console.error('Error loading CSV:', error));
+});
+
+// Listener to append new sentiment data to the CSV
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'appendToCSV') {
+        appendToCSV(request.newEntry);
+        sendResponse({ success: true });
+    } else if (request.action === 'getCsvData') {
+        getCsvData();
+        sendResponse({ success: true });
+    }
+    return true;  // Keep the message channel open for async responses
+});
+
+
 // Run sentiment analysis when the extension button is clicked
 chrome.action.onClicked.addListener((tab) => {
     chrome.scripting.executeScript({
@@ -109,3 +137,40 @@ chrome.action.onClicked.addListener((tab) => {
 function startSentimentAnalysis() {
     chrome.runtime.sendMessage({ action: 'startSentimentAnalysis' });
 }
+
+// Load the CSV data on installation
+chrome.runtime.onInstalled.addListener(() => {
+    let csvUrl = chrome.runtime.getURL('trainingData/trainingData.csv');
+    fetch(csvUrl)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.text();
+        })
+        .then(csvContent => {
+            chrome.storage.local.set({ csvData: csvContent }, () => {
+                console.log('CSV data loaded into local storage.');
+            });
+        })
+        .catch(error => {
+            console.error('Error loading CSV:', error);
+        });
+});
+
+// Function to append new data to the CSV in local storage
+function appendToCSV(newEntry) {
+    chrome.storage.local.get(['csvData'], (result) => {
+        let csvData = result.csvData || ''; // Retrieve existing CSV data or initialize
+        csvData += newEntry; // Append the new entry
+
+        // Store the updated CSV data
+        chrome.storage.local.set({ csvData: csvData }, () => {
+            console.log('CSV updated in storage.');
+        });
+    });
+}
+
+chrome.storage.local.get(['csvData'], (result) => {
+    console.log('Stored CSV Data:', result.csvData);
+});

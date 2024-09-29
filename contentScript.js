@@ -80,15 +80,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 
-// // Function to start sentiment analysis when the video ID changes
-// function startSentimentAnalysis() {
-//     const videoId = getVideoIdFromUrl();
-//     if (videoId) {
-//         console.log('Starting sentiment analysis for Video ID:', videoId);
-//         fetchYoutubeCommentsVideoId(videoId);
-//     }
-// }
-
 // Function to detect URL changes (YouTube video changes) and trigger sentiment analysis
 function observeUrlChanges() {
     // Override pushState and replaceState to detect navigation
@@ -116,26 +107,29 @@ function observeUrlChanges() {
 // Call this function when the content script loads
 observeUrlChanges();
 
-// Function to start the sentiment analysis process
-// function startSentimentAnalysis() {
-//     const videoId = getVideoIdFromUrl();
-//     if (videoId) {
-//         console.log('Video ID found:', videoId);
-//         // Trigger the sentiment analysis using the retrieved video ID
-//         getTrainingDataFromCsv(chrome.runtime.getURL('trainingData/trainingData.csv')).then(() => {
-//             fetchYoutubeCommentsVideoId(videoId);
-//         }).catch(error => {
-//             console.error('Error fetching CSV file:', error);
-//         });
-//     } else {
-//         console.error('Unable to extract video ID from the URL.');
-//     }
-// }
 
 // Function to extract video ID from YouTube URL
 function getVideoIdFromUrl() {
+    const currentUrl = window.location.href;
     const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get("v");  // Extract the 'v' query parameter as the video ID
+    let videoId = urlParams.get("v");  // Extract the 'v' query parameter as the video ID
+
+    if (!videoId) {
+        // Try to extract the video ID using a regular expression for URLs without the 'v' parameter
+        const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+        const match = currentUrl.match(regex);
+        if (match && match[1]) {
+            videoId = match[1];
+        }
+    }
+
+    if (videoId) {
+        console.log('Extracted video ID:', videoId);
+        return videoId;
+    } else {
+        console.error('Unable to extract video ID from the URL.');
+        return null;
+    }
 }
 
 // Send video ID to the background script
@@ -187,15 +181,18 @@ function sendVideoId(videoId) {
 }
 
 
+
 let allCommentsData = []; // Global variable to store all comments after sentiment analysis
 
-// Function to display comments based on sentiment
+// Function to display comments based on sentiment, with buttons to manually change sentiment
 function displayFilteredComments(comments) {
     const commentsContainer = document.getElementById('commentsContainer');
     const loadingMessage = document.getElementById('loading-message');
 
     // Hide the loading message and show the comments container
-    loadingMessage.style.display = 'none';
+    if (loadingMessage) {
+        loadingMessage.style.display = 'none';
+    }
     commentsContainer.style.display = 'block';
 
     commentsContainer.innerHTML = ''; // Clear existing comments
@@ -215,6 +212,46 @@ function displayFilteredComments(comments) {
             sentimentText = `<span style="color:gray;">Neutral 😐</span>`;
         }
 
+        // Create buttons for user to manually update sentiment
+        const positiveButton = document.createElement('button');
+        positiveButton.textContent = 'Mark Positive';
+        positiveButton.style.cssText = `
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            margin-right: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        `;
+        positiveButton.onmouseover = () => {
+            positiveButton.style.backgroundColor = '#218838'; // Darken on hover
+        };
+        positiveButton.onmouseout = () => {
+            positiveButton.style.backgroundColor = '#28a745'; // Revert on mouse out
+        };
+        positiveButton.onclick = () => updateCommentSentiment(commentData, 'positive', li);
+
+        const negativeButton = document.createElement('button');
+        negativeButton.textContent = 'Mark Negative';
+        negativeButton.style.cssText = `
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        `;
+        negativeButton.onmouseover = () => {
+            negativeButton.style.backgroundColor = '#c82333'; // Darken on hover
+        };
+        negativeButton.onmouseout = () => {
+            negativeButton.style.backgroundColor = '#dc3545'; // Revert on mouse out
+        };
+        negativeButton.onclick = () => updateCommentSentiment(commentData, 'negative', li);
+
         li.innerHTML = `
             <div class="comment">
                 <p class="comment-text">${commentData.comment}</p>
@@ -223,7 +260,54 @@ function displayFilteredComments(comments) {
                 <p class="comment-likes">👍 Likes: ${commentData.likes}</p>
             </div>
         `;
+
+        // Append buttons to the comment
+        li.appendChild(positiveButton);
+        li.appendChild(negativeButton);
+
         commentsContainer.appendChild(li);
+    });
+}
+
+// Function to update comment sentiment and save it to the CSV
+function updateCommentSentiment(commentData, newSentiment, commentElement) {
+    const label = newSentiment === 'positive' ? 4 : 0;
+    const maxPositivity = newSentiment === 'positive' ? 1.0 : 0.0; // Max or min positivity based on sentiment
+    const updatedSentimentText = newSentiment === 'positive' ? `<span style="color:green;">Positive 😄</span>` : `<span style="color:red;">Negative 😡</span>`;
+
+    // Update the sentiment text and positivity on the page
+    commentElement.querySelector('.comment-sentiment').innerHTML = `Sentiment: ${updatedSentimentText}`;
+    commentElement.querySelector('.comment-probability').innerHTML = `Positivity: ${(maxPositivity * 100).toFixed(2)}%`;
+
+    // Update the underlying comment data (allCommentsData)
+    updateCommentData(commentData, newSentiment, maxPositivity);
+
+    // Append the new sentiment data to the CSV
+    appendToCSV(label, commentData.comment);
+}
+
+// Function to update the underlying comment data
+function updateCommentData(commentData, newSentiment, maxPositivity) {
+    commentData.sentiment = newSentiment === 'positive' ? 'Positive' : 'Negative';
+    commentData.probability = maxPositivity;
+
+    const commentIndex = allCommentsData.findIndex(c => c.comment === commentData.comment);
+    if (commentIndex !== -1) {
+        allCommentsData[commentIndex].sentiment = commentData.sentiment;
+        allCommentsData[commentIndex].probability = commentData.probability;
+    }
+}
+
+// Function to append data to the CSV file
+function appendToCSV(newEntry) {
+    chrome.storage.local.get(['csvData'], (result) => {
+        let csvData = result.csvData || ''; // Retrieve existing CSV data or initialize if empty
+        csvData += newEntry; // Append the new entry to the CSV data
+
+        // Store the updated CSV data back into chrome.storage.local
+        chrome.storage.local.set({ csvData: csvData }, () => {
+            console.log('CSV data updated in storage.');
+        });
     });
 }
 
@@ -247,6 +331,16 @@ function filterComments(filter) {
 
     // Display the sorted comments
     displayFilteredComments(filteredComments);
+}
+
+function getCsvData() {
+    chrome.storage.local.get(['csvData'], (result) => {
+        if (result.csvData) {
+            console.log('CSV Data:', result.csvData);
+        } else {
+            console.log('No CSV data found in storage.');
+        }
+    });
 }
 
 // Fetch YouTube comments, analyze them, and display sentiment
