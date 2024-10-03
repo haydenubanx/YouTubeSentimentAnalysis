@@ -23,6 +23,7 @@
   ],
   "permissions": [
     "tabs",
+    "alarms",
     "activeTab",
     "scripting",
     "storage"
@@ -36,8 +37,7 @@
       "js": [
         "scripts/sentimentAnalysis.js",
         "contentScript.js"
-      ],
-      "run_at": "document_idle"
+      ]
     }
   ],
   "web_accessible_resources": [

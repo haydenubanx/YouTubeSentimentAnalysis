@@ -202,7 +202,7 @@ let negativeTrigrams = {
 
 let zeroCount = 0;
 let fourCount = 0;
-let trainingIterations = 4;
+let trainingIterations = 8;
 
 let apiBaseUrl = 'https://youtube.googleapis.com/youtube/v3';
 let key = "AIzaSyBav8jQwmVNxRFk4Q2FcviOHnUwbJjM8cU";
@@ -241,10 +241,20 @@ async function getTrainingDataFromCsvAndDatabase(pathToCsv) {
     fourCount = 0;
 
     // Fetch CSV data
-    const csvDataPromise = fetch(pathToCsv)
-        .then(response => {
+    const csvDataPromise = await fetch(pathToCsv)
+        .then(async response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const csvContent = await csvDataPromise.text();
+            if (!csvContent || csvContent.length === 0) {
+                throw new Error('CSV content is empty.');
+            }
+
+            // Parse and process the CSV content
+            const parsedData = parseCSV(csvContent);
+            if (!parsedData || parsedData.length === 0) {
+                throw new Error('Parsed CSV data is empty.');
             }
             return response.text();
         })
@@ -304,6 +314,11 @@ async function getTrainingDataFromCsvAndDatabase(pathToCsv) {
             for (let i = 0; i < trainingIterations; i++) {
                 testModel(testData);
             }
+
+            // After training, store the training status
+            chrome.storage.local.set({ isModelTrained: true }, () => {
+                console.log('Model training completed and stored as trained.');
+            });
         })
         .catch(error => console.error('Error fetching training data:', error));
 }
@@ -727,14 +742,39 @@ document.addEventListener('DOMContentLoaded', function () {
 document.addEventListener('DOMContentLoaded', function () {
     // Request the current video ID from the background script
     chrome.runtime.sendMessage({action: 'getVideoId'}, (response) => {
-        const videoId = response.videoId;
-        if (videoId) {
-            // Trigger the sentiment analysis using the retrieved video ID
-            getTrainingDataFromCsvAndDatabase(chrome.runtime.getURL('trainingData/trainingData.csv')).then(() => {
-                fetchYoutubeCommentsVideoId(videoId);
-            }).catch(error => {
-                console.error('Error fetching CSV file:', error);
-            });
+        if(response.videoId) {
+            const videoId = response.videoId;
+
+            if (videoId) {
+                // Trigger the sentiment analysis using the retrieved video ID
+                // getTrainingDataFromCsvAndDatabase(chrome.runtime.getURL('trainingData/trainingData.csv')).then(() => {
+                fetchYoutubeCommentsVideoId(videoId)
+                    // })
+                    .catch(error => {
+                        console.error('Error Fetching Comments and Performing Analysis:', error);
+                    });
+            }
         }
     });
+});
+
+// Listener to handle messages from background.js
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === 'trainModel') {
+        console.log('Received message to train the model.');
+
+        // Trigger the model training logic
+        getTrainingDataFromCsvAndDatabase('trainingData/trainingData.csv')
+            .then(() => {
+                sendResponse({ modelTrained: true });
+                console.log('Model trained successfully.');
+            })
+            .catch((error) => {
+                console.error('Error during model training:', error);
+                sendResponse({ modelTrained: false });
+            });
+
+        // Keep the message channel open
+        return true;
+    }
 });

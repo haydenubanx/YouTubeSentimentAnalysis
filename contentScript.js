@@ -1,5 +1,13 @@
 let isModelTrained = false;
 let lastVideoId = null;
+let retryInterval = 1000; // Retry every 1 second
+
+// Call this when content script starts
+// initializeModel().then(() => {
+//     observeUrlChanges();  // Start observing changes
+// }).catch(() => {
+//     console.log('Sentiment analysis disabled until the model is trained.');
+// });
 
 
 async function sendCommentToDatabase(comment, sentiment) {
@@ -22,6 +30,22 @@ async function sendCommentToDatabase(comment, sentiment) {
     } else {
         console.error('Failed to save comment:', result.error);
     }
+}
+
+// Function to initialize model training
+async function initializeModel() {
+    return new Promise((resolve, reject) => {
+        chrome.storage.local.get('isModelTrained', (result) => {
+            isModelTrained = result.isModelTrained || false;
+            if (isModelTrained) {
+                console.log('Model is already trained.');
+                resolve(true);
+            } else {
+                console.error('Model is not trained. Requesting training.');
+                reject(false);
+            }
+        });
+    });
 }
 
 // Wait for the model to be trained before proceeding with sentiment analysis
@@ -47,21 +71,21 @@ async function initializeModelAndStartSentiment() {
     });
 }
 
-function trainModel() {
-    // Logic to train the model (load CSV, process data, etc.)
-    getTrainingDataFromCsvAndDatabase('trainingData/trainingData.csv').then(() => {
-        isModelTrained = true;
-        console.log("Model trained successfully.");
-    }).catch(error => {
-        console.error('Error during model training:', error);
-    });
-}
+// function trainModel() {
+//     // Logic to train the model (load CSV, process data, etc.)
+//     getTrainingDataFromCsvAndDatabase('trainingData/trainingData.csv').then(() => {
+//         isModelTrained = true;
+//         console.log("Model trained successfully.");
+//     }).catch(error => {
+//         console.error('Error during model training:', error);
+//     });
+// }
 
 // Function to start sentiment analysis when the video ID changes
 async function startSentimentAnalysis() {
     const videoId = getVideoIdFromUrl();
     if (videoId && isModelTrained) {
-        console.log('Starting sentiment analysis for Video ID:', videoId);
+        console.log('Starting sentiment analysis for video ID:', videoId);
         await fetchYoutubeCommentsVideoId(videoId);  // Proceed with sentiment analysis
     } else {
         console.error('Model is not trained or no valid video ID found.');
@@ -121,11 +145,16 @@ function injectSentimentIntoPage(overallSentiment, positivityPercentage, sentime
 
 
 // Listen for the message to start sentiment analysis
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === 'startSentimentAnalysis' && isModelTrained) {
-        startSentimentAnalysis(); // Perform sentiment analysis if the model is trained
-    } else {
-        console.error('Model is not trained yet.');
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === 'startSentimentAnalysis') {
+        const videoId = getVideoIdFromUrl(); // Assuming this function extracts the video ID
+
+        if (videoId) {
+            console.log('Starting sentiment analysis for video ID:', videoId);
+            // Proceed with sentiment analysis
+        } else {
+            console.error('No valid video ID found.');
+        }
     }
 });
 
@@ -178,7 +207,7 @@ function getVideoIdFromUrl() {
         return videoId;
     } else {
         // console.error('Unable to extract video ID from the URL.');
-        return null;
+        return false;
     }
 }
 
@@ -190,13 +219,13 @@ if (videoId) {
         const videoId = response.videoId;
         if (videoId) {
             // Fetch the sentiment analysis and inject the data into the YouTube page
-            getTrainingDataFromCsvAndDatabase(chrome.runtime.getURL('trainingData/trainingData.csv'))
-                .then(() => {
-                    fetchYoutubeCommentsVideoId(videoId).then((sentimentData) => {
-                        const {overallSentiment, positivityPercentage, individualCommentData} = sentimentData;
-                        injectSentimentIntoPage(overallSentiment, positivityPercentage, individualCommentData);
-                    });
-                })
+            // getTrainingDataFromCsvAndDatabase(chrome.runtime.getURL('trainingData/trainingData.csv'))
+            //     .then(() => {
+            fetchYoutubeCommentsVideoId(videoId).then((sentimentData) => {
+                const {overallSentiment, positivityPercentage, individualCommentData} = sentimentData;
+                injectSentimentIntoPage(overallSentiment, positivityPercentage, individualCommentData);
+            })
+                // })
                 .catch(error => {
                     console.error('Error fetching CSV file:', error);
                 });
@@ -206,24 +235,31 @@ if (videoId) {
     });
 }
 
-function retryFetchVideoId() {
-    chrome.storage.local.get(['lastVideoId'], (result) => {
-        let videoId = result.lastVideoId || getVideoIdFromUrl();
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === 'startSentimentAnalysis') {
+        const videoId = getVideoIdFromUrl();
 
         if (videoId) {
-            console.log('Video ID found:', videoId);
-            sendVideoId(videoId);
-            // Trigger the sentiment analysis using the retrieved video ID
-            getTrainingDataFromCsvAndDatabase(chrome.runtime.getURL('trainingData/trainingData.csv')).then(() => {
-                fetchYoutubeCommentsVideoId(videoId);
-            }).catch(error => {
-                console.error('Error fetching CSV file:', error);
-            });
+            console.log('Starting sentiment analysis for video ID:', videoId);
+            // Proceed with sentiment analysis logic here
         } else {
-            console.info('Unable to extract video ID from the URL. Retrying in 1 second...');
-            setTimeout(retryFetchVideoId, 1000);  // Retry after 1 second
+            console.error('No valid video ID found.');
         }
-    });
+    }
+});
+
+function retryFetchVideoId() {
+    const videoId = getVideoIdFromUrl();
+
+    if (videoId) {
+        console.log('Valid video ID found:', videoId);
+        sendVideoId(videoId);
+    } else if (window.location.href.includes("youtube.com/watch")) {
+        console.log('Retrying to fetch video ID...');
+        setTimeout(retryFetchVideoId, retryInterval); // Retry after 1 second
+    } else {
+        console.log('Not a valid YouTube page. Stopping retries.');
+    }
 }
 
 function sendVideoId(videoId) {
@@ -232,6 +268,8 @@ function sendVideoId(videoId) {
     });
     chrome.runtime.sendMessage({ action: 'sendVideoId', videoId: videoId });
 }
+
+
 
 
 let allCommentsData = []; // Global variable to store all comments after sentiment analysis
@@ -567,9 +605,10 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('filter-negative').addEventListener('click', () => filterComments('negative'));
 
 
-    initializeModelAndStartSentiment();
+    // initializeModelAndStartSentiment();
 
     retryFetchVideoId();
+
 
     observeUrlChanges();
 
@@ -594,10 +633,10 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
-chrome.runtime.onInstalled.addListener(() => {
-    console.log("Extension installed/updated, starting model training...");
-    trainModel();  // Train model once during installation or update
-});
+// chrome.runtime.onInstalled.addListener(() => {
+//     console.log("Extension installed/updated, starting model training...");
+//     trainModel();  // Train model once during installation or update
+// });
 
 // chrome.runtime.onStartup.addListener(() => {
 //     console.log("Chrome started, training the model...");
@@ -605,18 +644,40 @@ chrome.runtime.onInstalled.addListener(() => {
 // });
 
 // Listener to respond to content scripts about model training status
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === 'checkModelTraining') {
-        sendResponse({modelTrained: isModelTrained});
-    }
+// chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+//     if (message.action === 'checkModelTraining') {
+//         sendResponse({modelTrained: isModelTrained});
+//     }
+//
+//     if (message.action === 'trainModel') {
+//         if (!isModelTrained) {
+//             trainModel();  // If model isn't trained yet, start the training process
+//             sendResponse({modelTrained: false});
+//         } else {
+//             sendResponse({modelTrained: true});
+//         }
+//     }
+// });
 
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'trainModel') {
-        if (!isModelTrained) {
-            trainModel();  // If model isn't trained yet, start the training process
-            sendResponse({modelTrained: false});
-        } else {
-            sendResponse({modelTrained: true});
-        }
+        console.log('Received message to train the model.');
+
+        // Train the model and send a response
+        getTrainingDataFromCsvAndDatabase('trainingData/trainingData.csv')
+            .then(() => {
+                isModelTrained = true;
+                chrome.storage.local.set({ isModelTrained: true }, () => {
+                    console.log('Model trained successfully.');
+                    sendResponse({ modelTrained: true });
+                });
+            })
+            .catch((error) => {
+                console.error('Error during model training:', error);
+                sendResponse({ modelTrained: false });
+            });
+
+        return true;  // Keep the message channel open until response is sent
     }
 });
 
