@@ -475,7 +475,7 @@ let retrainTrainingIterations = 6;
 let db;
 
 let apiBaseUrl = 'https://youtube.googleapis.com/youtube/v3';
-let key = "AIzaSyBav8jQwmVNxRFk4Q2FcviOHnUwbJjM8cU";
+let key = atob("QUl6YVN5QmF2OGpRd21WTnhSRms0UTJGY3ZpT0huVXdiSmpNOGNV");
 
 function parseCSV(csvContent) {
     return Papa.parse(csvContent, {
