@@ -4,62 +4,226 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comment Analysis For Youtube</title>
+    <title>Comment Analysis For YouTube</title>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <script src="https://unpkg.com/compromise@13.11.1/builds/compromise.min.js"></script></head>
+    <!-- Link to an external font -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Internal CSS for a modern, aesthetic design -->
+    <style>
+        /* Reset and box model setup */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body styling */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #181818; /* Dark mode background */
+            color: #e0e0e0; /* Light grey text color */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Main container styling */
+        .container {
+            position: relative;
+            background-color: #242424; /* Deep grey */
+            border-radius: 15px;
+            box-shadow: 0px 12px 35px rgba(0, 0, 0, 0.3); /* Deeper shadow for modern look */
+            padding: 50px;
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px); /* Subtle hover effect */
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5); /* Enhanced hover shadow */
+        }
+
+        /* Header styling */
+        h1 {
+            color: #f5f5f5; /* Teal header for a modern contrast */
+            font-size: 38px;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        /* Filter buttons styling */
+        #filter-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .btn {
+            padding: 14px 30px;
+            background-color: #ff5722; /* Slightly muted orange */
+            color: #fff;
+            border-radius: 50px; /* Rounded, pill-shaped buttons */
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            font-size: 15px;
+            box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4); /* Softer shadow */
+            border: none;
+        }
+
+        .btn:hover {
+            background-color: #ff3d00; /* Darker hover effect */
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 87, 34, 0.6);
+        }
+
+        /* Comments container styling */
+        #commentsContainer {
+            list-style: none;
+            padding: 0;
+            background-color: transparent;
+            max-width: 100%;
+        }
+
+        #commentsContainer li {
+            background-color: #333; /* Slightly lighter grey for contrast */
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        #commentsContainer li:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Comments text */
+        .comment-text {
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        .comment-sentiment {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #f5f5f5; /* Teal accent */
+        }
+
+        .comment-probability, .comment-likes {
+            font-size: 13px;
+            color: #c0c0c0; /* Slightly muted for secondary info */
+        }
+
+        /* Loading message styling */
+        #loading-message {
+            font-size: 18px;
+            color: #f5f5f5;
+            margin-bottom: 25px;
+            animation: pulse 1.5s infinite;
+        }
+
+        #retrain-button {
+            padding: 8px 16px;
+            margin-bottom: 1em;
+            font-size: 12px;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #ff5722;
+            color: #fff;
+            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            z-index: 100;
+        }
+
+        #retrain-button:hover {
+            background-color: #ff3d00; /* Slightly darker on hover */
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4);
+        }
+
+        /* Keyframe for loading pulse animation */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .btn {
+                padding: 12px 18px;
+                font-size: 14px;
+            }
+
+            .comment-text {
+                font-size: 14px;
+            }
+
+            .comment-sentiment {
+                font-size: 13px;
+            }
+
+            .comment-probability, .comment-likes {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
 <body>
+<div class="container">
+    <button id="retrain-button" class="btn">Retrain Model</button>
+    <h1>Comment Analysis For YouTube</h1>
 
-<!--<script src="https://apis.google.com/js/api.js"></script>-->
-<!--<script>-->
-<!--    /**-->
-<!--     * Sample JavaScript code for YouTube.commentThreads.list-->
-<!--     * See instructions for running APIs Explorer code samples locally:-->
-<!--     * https://developers.google.com/explorer-help/code-samples#javascript-->
-<!--     */-->
+    <!-- Filter Buttons -->
+    <div id="filter-buttons">
+        <button class="btn" id="filter-all">All</button>
+        <button class="btn" id="filter-positive">Positive</button>
+        <button class="btn" id="filter-neutral">Neutral</button>
+        <button class="btn" id="filter-negative">Negative</button>
+    </div>
+    <p>Help Make our Sentiment Analysis better!<br>Manually mark comments to help train the model for better results!</p>
+    <br>
+    <!-- Loading message -->
+    <p id="loading-message">Performing Analysis...<br>(This may take up to a minute)</p>
 
-<!--    function loadClient() {-->
-<!--        gapi.client.setApiKey("AIzaSyBav8jQwmVNxRFk4Q2FcviOHnUwbJjM8cU");-->
-<!--        return gapi.client.load("https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest")-->
-<!--            .then(function () {-->
-<!--                    console.log("GAPI client loaded for API");-->
-<!--                },-->
-<!--                function (err) {-->
-<!--                    console.error("Error loading GAPI client for API", err);-->
-<!--                });-->
-<!--    }-->
-
-<!--    // Make sure the client is loaded before calling this method.-->
-<!--    function execute() {-->
-<!--        return gapi.client.youtube.commentThreads.list({-->
-<!--            "part": [-->
-<!--                "snippet,replies"-->
-<!--            ],-->
-<!--            "videoId": "_VB39Jo8mAQ"-->
-<!--        })-->
-<!--            .then(function (response) {-->
-<!--                    // Handle the results here (response.result has the parsed body).-->
-<!--                    console.log("Response", response);-->
-<!--                },-->
-<!--                function (err) {-->
-<!--                    console.error("Execute error", err);-->
-<!--                });-->
-<!--    }-->
-
-<!--    gapi.load("client");-->
-<!--</script>-->
-<!--<button onclick="loadClient()">load</button>-->
-<!--<button onclick="execute()">execute</button>-->
-
-<div>
-    <h1>Youtube Comments</h1>
-
-    <ul id="commentsContainer">
-
-        <li id="comments"></li>
+    <!-- Comments container -->
+    <ul id="commentsContainer" class="commentsContainer" style="display:none">
+        <!-- Invisible comment to maintain consistent width -->
+        <li id="invisible-comment" style="visibility:hidden;">
+            <p class="comment-text">Invisible Comment</p>
+            <p class="comment-sentiment">Sentiment: Neutral</p>
+            <p class="comment-probability">Probability: 0%</p>
+            <p class="comment-likes">👍 Likes: 0</p>
+        </li>
+        <!-- Actual comments will be injected here by JS -->
     </ul>
 </div>
 
+<!-- External JS files -->
+<script src="scripts/papaparse.min.js" defer></script>
+<script src="scripts/sentimentAnalysis.js" defer></script>
+<script src="contentScript.js" defer></script>
+<script src="background.js" defer></script>
 </body>
 <script src="scripts/sentimentAnalysis.js">
 

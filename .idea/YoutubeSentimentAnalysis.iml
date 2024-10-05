@@ -15,5 +15,7 @@
     <orderEntry type="library" name="sentiment" level="application" />
     <orderEntry type="library" name="@tensorflow/tfjs" level="application" />
     <orderEntry type="library" name="sentiment-analysis" level="application" />
+    <orderEntry type="library" name="jszip" level="application" />
+    <orderEntry type="library" name="FileSaver.js" level="application" />
   </component>
 </module>
