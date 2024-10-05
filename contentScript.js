@@ -60,7 +60,7 @@ async function initializeModel() {
         return true;
     } else {
         console.log('Training the model...');
-        return getTrainingDataFromCsvAndDatabase("trainingData/trainingData.csv").then(() => {
+        return getTrainingDataFromCsvAndDatabase("trainingData/trainingData.csv", 'train').then(() => {
             isModelTrained = true;
             console.log('Model trained successfully.');
             return true;
@@ -694,7 +694,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         console.log('Received message to train the model.');
 
         // Train the model and send a response
-        getTrainingDataFromCsvAndDatabase('trainingData/trainingData.csv')
+        getTrainingDataFromCsvAndDatabase('trainingData/trainingData.csv', 're-train')
             .then(() => {
                 isModelTrained = true;
                 console.log('Model trained successfully.');

@@ -504,7 +504,7 @@ async function fetchCommentsFromDatabase() {
         });
 }
 
-async function getTrainingDataFromCsvAndDatabase(pathToCsv) {
+async function getTrainingDataFromCsvAndDatabase(pathToCsv, trainingMode) {
     let csvDataPromise;
     zeroCount = 0;
     fourCount = 0;
@@ -576,9 +576,16 @@ async function getTrainingDataFromCsvAndDatabase(pathToCsv) {
             console.log('Positive Words:', positiveWords);
             console.log('Negative Words:', negativeWords);
 
-            // After training, test the model on the remaining 15%
-            for (let i = 0; i < trainingIterations; i++) {
-                testModel(testData);
+            if(trainingMode === 'train') {
+                // After training, test the model on the remaining 15%
+                for (let i = 0; i < trainingIterations; i++) {
+                    testModel(testData);
+                }
+            } else if(trainingMode === 're-train') {
+                // After training, test the model on the remaining 15%
+                for (let i = 0; i < retrainTrainingIterations; i++) {
+                    testModel(testData);
+                }
             }
 
             // After training, store the training status
