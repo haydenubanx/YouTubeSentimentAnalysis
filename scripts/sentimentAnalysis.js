@@ -472,6 +472,8 @@ let fourCount = 0;
 let trainingIterations = 2;
 let retrainTrainingIterations = 15;
 
+let db;
+
 let apiBaseUrl = 'https://youtube.googleapis.com/youtube/v3';
 let key = "AIzaSyBav8jQwmVNxRFk4Q2FcviOHnUwbJjM8cU";
 
@@ -481,6 +483,117 @@ function parseCSV(csvContent) {
         dynamicTyping: true,
         skipEmptyLines: true
     }).data;
+}
+
+// Open or create a new IndexedDB database
+function openDatabase() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open('SentimentAnalysisDB', 3);
+
+        request.onerror = (event) => {
+            console.error('Failed to open IndexedDB:', event.target.errorCode);
+            reject(new Error('Failed to open IndexedDB.'));
+        };
+
+        request.onsuccess = (event) => {
+            db = request.result;
+            console.log('IndexedDB opened successfully');
+            resolve(db);
+        };
+
+        request.onupgradeneeded = (event) => {
+            db = event.target.result;
+            if (!db.objectStoreNames.contains('sentimentModel')) {
+                db.createObjectStore('sentimentModel', { keyPath: 'id' });
+            }
+            console.log('IndexedDB setup or upgrade complete');
+        };
+    });
+}
+
+// Save the sentiment model to IndexedDB
+function saveModelToIndexedDB() {
+    if (!db) {
+        console.error('Database is not initialized. Please ensure openDatabase() is called.');
+        return;
+    }
+
+    const transaction = db.transaction(['sentimentModel'], 'readwrite');
+    const objectStore = transaction.objectStore('sentimentModel');
+
+    const modelData = {
+        id: 1,  // Use a fixed ID for a single model
+        positiveWords,
+        negativeWords,
+        positiveBigrams,
+        negativeBigrams,
+        positiveTrigrams,
+        negativeTrigrams,
+        zeroCount,
+        fourCount
+    };
+
+    const request = objectStore.put(modelData);
+
+    transaction.oncomplete = () => {
+        console.log('Model data saved to IndexedDB');
+    };
+
+    transaction.onerror = (event) => {
+        console.error('Error saving model to IndexedDB', event);
+    };
+}
+
+// Load the sentiment model from IndexedDB
+function loadModelFromIndexedDB() {
+    if (!db) {
+        console.error('Database is not initialized. Please ensure openDatabase() is called.');
+        return;
+    }
+
+    const transaction = db.transaction(['sentimentModel'], 'readonly');
+    const objectStore = transaction.objectStore('sentimentModel');
+
+    const request = objectStore.get(1);  // Fetch the model with the ID 1
+
+    request.onsuccess = (event) => {
+        const model = request.result;
+        if (model) {
+            positiveWords = model.positiveWords || positiveWords;
+            negativeWords = model.negativeWords || negativeWords;
+            positiveBigrams = model.positiveBigrams || positiveBigrams;
+            negativeBigrams = model.negativeBigrams || negativeBigrams;
+            positiveTrigrams = model.positiveTrigrams || positiveTrigrams;
+            negativeTrigrams = model.negativeTrigrams || negativeTrigrams;
+            zeroCount = model.zeroCount || 0;
+            fourCount = model.fourCount || 0;
+
+            console.log('Model loaded from IndexedDB');
+        } else {
+            console.log('No model found in IndexedDB');
+        }
+    };
+
+    transaction.onerror = (event) => {
+        console.error('Error loading model from IndexedDB', event);
+    };
+}
+
+async function saveModel() {
+    if (!db) {
+        // Wait for the database to be initialized if it hasn't been yet
+        await openDatabase();
+    }
+    saveModelToIndexedDB();
+}
+
+async function loadModel() {
+    if (!db) {
+        // Wait for the database to be initialized if it hasn't been yet
+        await openDatabase();
+    }
+
+    loadModelFromIndexedDB();
 }
 
 
@@ -588,6 +701,8 @@ async function getTrainingDataFromCsvAndDatabase(pathToCsv, trainingMode) {
                 }
             }
 
+            saveModel();
+
             // After training, store the training status
             isModelTrained = true;
             console.log('Model training completed and stored as trained.');
@@ -596,82 +711,6 @@ async function getTrainingDataFromCsvAndDatabase(pathToCsv, trainingMode) {
         .catch(error => console.error('Error fetching training data:', error));
 }
 
-// async function getTrainingDataFromCsv(pathToCsv) {
-//     zeroCount = 0;
-//     fourCount = 0;
-//
-//     return await fetch(pathToCsv)
-//         .then(response => {
-//             if (!response.ok) {
-//                 throw new Error(`HTTP error! status: ${response.status}`);
-//             }
-//             return response.text();
-//         })
-//         .then(csvContent => {
-//             console.log("CSV Content Loaded Successfully");
-//             let allData = parseCSV(csvContent);
-//             console.log("Parsed Data:", allData);
-//
-//             if (!allData || allData.length === 0) {
-//                 throw new Error("Parsed CSV data is empty or undefined");
-//             }
-//
-//             // Filter to only keep columns 0 and 5 (ensure enough columns in row)
-//             let filteredData = allData.map(row => [row[0], row[1]]);
-//             console.log('Filtered Data:', filteredData);
-//
-//             let tableSize = filteredData.length;
-//             console.log('Number Of Data Entries:', tableSize);
-//
-//             // Evenly split the data: 85% for training, 15% for testing
-//             let trainDataSize = Math.floor(0.85 * tableSize);
-//             let trainingData = [];
-//             let testData = [];
-//
-//             for (let i = 0; i < tableSize; i++) {
-//                 // Evenly pick from both ends
-//                 if (i % 7 === 0) {
-//                     testData.push(filteredData[i]);
-//                 } else {
-//                     trainingData.push(filteredData[i]);
-//                 }
-//             }
-//
-//             console.log('Training Data Size:', trainingData.length);
-//             console.log('Test Data Size:', testData.length);
-//
-//             // Process each row in the training data and train the word lists
-//             trainingData.forEach((row, index) => {
-//                 let label = parseInt(row[0], 10);
-//
-//                 // Ignore invalid labels
-//                 if (label !== 0 && label !== 4) return;
-//
-//                 if (label === 0) zeroCount++;
-//                 if (label === 4) fourCount++;
-//
-//                 // Convert label: 4 -> positive, 0 -> negative
-//                 label = label === 4 ? 1 : 0;
-//
-//                 let text = row[1];
-//                 // Vectorize text and update positive or negative word lists
-//                 vectorizeText(text, label);
-//             });
-//
-//             console.log('Zero Count:', zeroCount);
-//             console.log('Four Count:', fourCount);
-//
-//             console.log('Positive Words:', positiveWords);
-//             console.log('Negative Words:', negativeWords);
-//
-//             // After training, test the model on the remaining 15%
-//             for (let i = 0; i < trainingIterations; i++) {
-//                 testModel(testData);
-//             }
-//
-//         })
-//         .catch(error => console.error('Error fetching CSV file:', error));
-// }
 
 function testModel(testData) {
     console.log('Testing the model on the remaining 15% of the data...');
@@ -1020,23 +1059,25 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-document.addEventListener('DOMContentLoaded', function () {
-    // Request the current video ID from the background script
-    chrome.runtime.sendMessage({action: 'getVideoId'}, (response) => {
-        if (response.videoId) {
-            const videoId = response.videoId;
+// Call openDatabase() before performing database operations
+document.addEventListener('DOMContentLoaded', async function () {
+    try {
+        // Ensure the database is opened before performing any operations
+        await openDatabase();
+        await loadModel();  // Ensure the model is loaded before proceeding
 
-            if (videoId) {
-                // Trigger the sentiment analysis using the retrieved video ID
-                // getTrainingDataFromCsvAndDatabase(chrome.runtime.getURL('trainingData/trainingData.csv')).then(() => {
-                fetchYoutubeCommentsVideoId(videoId)
-                    // })
+        // Request the current video ID from the background script
+        chrome.runtime.sendMessage({ action: 'getVideoId' }, (response) => {
+            if (response.videoId) {
+                fetchYoutubeCommentsVideoId(response.videoId)
                     .catch(error => {
                         console.error('Error Fetching Comments and Performing Analysis:', error);
                     });
             }
-        }
-    });
+        });
+    } catch (error) {
+        console.error('Error initializing the database or loading the model:', error);
+    }
 });
 
 // // Listener to handle messages from background.js
