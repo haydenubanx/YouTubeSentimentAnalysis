@@ -108,7 +108,7 @@ Feel free to open issues or ask questions if you encounter any problems or need 
 ## Contact
 
 Author: **Hayden Christopher Eubanks**  
-LinkedIn: [Hayden Eubanks](https://www.linkedin.com/in/hayden-eubanks)  
+LinkedIn: [Hayden Eubanks](https://www.linkedin.com/in/hayden-eubanks-794265280)  
 Website: [haydeneubanks.co.uk](https://haydeneubanks.co.uk)
 
 ---
