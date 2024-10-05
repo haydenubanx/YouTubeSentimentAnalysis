@@ -60,6 +60,7 @@ If you wish to retrain the sentiment analysis model:
 3. The model will be retrained, and future sentiment analysis will use the newly updated model.
 
 ## Project Structure
+```
 ├── /includes/             # Backend API to fetch and store comments and sentiment data
 ├── /scripts/              # Core JavaScript logic for sentiment analysis and Chrome extension
 │   ├── background.js      # Background script for Chrome extension logic
@@ -68,6 +69,8 @@ If you wish to retrain the sentiment analysis model:
 │   └── uiController.js    # Manages UI updates and DOM manipulation
 ├── manifest.json          # Chrome extension configuration
 └── README.md              # Project documentation
+```
+
 
 ## APIs and Libraries Used
 
