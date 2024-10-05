@@ -10,7 +10,6 @@ This project is a **Chrome Extension** that performs **Sentiment Analysis** on Y
 - **Real-time Analysis**: Automatically starts analyzing comments when a new video is loaded or when the video ID changes.
 - **Customizable Sentiment Filters**: Users can filter the comments displayed based on their sentiment (positive, neutral, or negative).
 - **User Feedback Integration**: Users can manually adjust the sentiment classification of individual comments, which helps fine-tune the model.
-- **Loading Indicator**: A smooth, real-time progress bar is shown during the analysis of comments, indicating progress.
 - **Sentiment Display**: Displays detailed sentiment statistics, including overall sentiment score, positivity percentage, and breakdown of positive, neutral, and negative comments.
 
 ## How It Works
@@ -82,9 +81,10 @@ If you wish to retrain the sentiment analysis model:
 
 ## Future Enhancements
 
-- **Advanced Emoji Support**: Improve sentiment detection by incorporating more emojis with sentiment values.
-- **User Sentiment Feedback**: Allow users to submit feedback on sentiment analysis, improving model accuracy.
+- **Advanced Model Support**: Improve sentiment detection by incorporating more words and emojis with sentiment values.
+- **User Sentiment Feedback**: Gain more user feedback to improve sentiment model accuracy.
 - **Multi-language Support**: Extend the model to analyze comments in multiple languages.
+- - **Inject Sentiment Values**: Inject the sentiment values passively directly into the YouTube page without needing to click extension.
 
 ## Contributing
 
@@ -112,5 +112,3 @@ LinkedIn: [Hayden Eubanks](https://www.linkedin.com/in/hayden-eubanks)
 Website: [haydeneubanks.co.uk](https://haydeneubanks.co.uk)
 
 ---
-
-Happy coding! 🎉
