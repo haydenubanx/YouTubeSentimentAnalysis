@@ -1,6 +1,7 @@
 let isModelTrained = false;
 let lastVideoId = null;
 let retryInterval = 1000; // Retry every 1 second
+let videoIdContentScript = "";
 
 // Call this when content script starts
 initializeModel().then(() => {
@@ -71,28 +72,6 @@ async function initializeModel() {
     }
 }
 
-// Wait for the model to be trained before proceeding with sentiment analysis
-async function initializeModelAndStartSentiment() {
-    return new Promise((resolve, reject) => {
-        // Check if model is already trained to avoid redundant calls
-        if (isModelTrained) {
-            resolve(true);  // Resolve immediately if model is trained
-            return;
-        }
-
-        // Request the background script to check the model training status
-        // chrome.runtime.sendMessage({action: 'checkModelTraining'}, (response) => {
-        //     if (response.modelTrained) {
-        //         isModelTrained = true;  // Mark model as trained
-        //         console.log("Model is already trained. Ready for sentiment analysis.");
-        //         resolve(true);  // Resolve the promise
-        //     } else {
-        //         console.error('Model is not trained.');
-        //         reject(false);  // Reject the promise if training fails
-        //     }
-        // });
-    });
-}
 
 function checkModelTrainedStatus() {
     return new Promise((resolve) => {
@@ -247,29 +226,6 @@ function getVideoIdFromUrl() {
     }
 }
 
-// // Send video ID to the background script
-const videoId = getVideoIdFromUrl();
-// if (videoId) {
-//     // Send message to background script to start sentiment analysis
-//     chrome.runtime.sendMessage({action: 'getVideoId'}, (response) => {
-//         const videoId = response.videoId;
-//         if (videoId) {
-//             // Fetch the sentiment analysis and inject the data into the YouTube page
-//             // getTrainingDataFromCsvAndDatabase(chrome.runtime.getURL('trainingData/trainingData.csv'))
-//             //     .then(() => {
-//             fetchYoutubeCommentsVideoId(videoId).then((sentimentData) => {
-//                 const {overallSentiment, positivityPercentage, individualCommentData} = sentimentData;
-//                 injectSentimentIntoPage(overallSentiment, positivityPercentage, individualCommentData);
-//             })
-//                 // })
-//                 .catch(error => {
-//                     console.error('Error fetching CSV file:', error);
-//                 });
-//         } else {
-//             console.error('No video ID found in the response.');
-//         }
-//     });
-// }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'startSentimentAnalysis') {
@@ -623,8 +579,8 @@ function observeComments() {
                 if (!isSentimentAdded) {
                     // Check if sentiment data is available and inject it
                     chrome.runtime.sendMessage({action: 'getVideoId'}, (response) => {
-                        const videoId = response.videoId;
-                        if (videoId) {
+                        videoIdContentScript = response.videoId;
+                        if (videoIdContentScript) {
                             fetchYoutubeCommentsVideoId(videoId);
                             // Create an observer instance
                             const observer = new MutationObserver(observerCallback);
@@ -658,8 +614,6 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('filter-negative').addEventListener('click', () => filterComments('negative'));
 
 
-    // initializeModelAndStartSentiment();
-
     retryFetchVideoId();
 
 
@@ -669,10 +623,10 @@ document.addEventListener('DOMContentLoaded', function () {
     // Request the current video ID from the background script
     chrome.runtime.sendMessage({action: 'getVideoId'}, (response) => {
         chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-            const videoId = response.videoId;
-            if (videoId) {
+            videoIdContentScript = response.videoId;
+            if (videoIdContentScript) {
                 if (request.action === 'startSentimentAnalysis') {
-                    fetchYoutubeCommentsVideoId(videoId)
+                    fetchYoutubeCommentsVideoId(videoIdContentScript)
 
                         .catch(error => {
                             console.error('Error Performing Analysis:', error);
@@ -749,8 +703,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 // Once retraining is done, fetch comments again
                 chrome.runtime.sendMessage({action: 'getVideoId'}, (response) => {
-                    if (response.videoId) {
-                        fetchYoutubeCommentsVideoId(response.videoId)
+                    if (videoIdContentScript) {
+                        fetchYoutubeCommentsVideoId(videoIdContentScript)
                             .then(() => {
                                 enableButtonsAndHideLoading();  // Re-enable buttons and hide loading
                             })

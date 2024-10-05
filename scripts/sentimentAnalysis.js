@@ -470,7 +470,7 @@ let negativeTrigrams = {
 let zeroCount = 0;
 let fourCount = 0;
 let trainingIterations = 2;
-let retrainTrainingIterations = 15;
+let retrainTrainingIterations = 6;
 
 let db;
 
@@ -485,7 +485,7 @@ function parseCSV(csvContent) {
     }).data;
 }
 
-// Open or create a new IndexedDB database
+// Open or create a new IndexedDB database and ensure it is fully initialized before proceeding
 function openDatabase() {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open('SentimentAnalysisDB', 3);
@@ -522,7 +522,7 @@ function saveModelToIndexedDB() {
     const objectStore = transaction.objectStore('sentimentModel');
 
     const modelData = {
-        id: 1,  // Use a fixed ID for a single model
+        id: 1,
         positiveWords,
         negativeWords,
         positiveBigrams,
@@ -544,39 +544,45 @@ function saveModelToIndexedDB() {
     };
 }
 
-// Load the sentiment model from IndexedDB
+// Load the sentiment model from IndexedDB with retries
 function loadModelFromIndexedDB() {
-    if (!db) {
-        console.error('Database is not initialized. Please ensure openDatabase() is called.');
-        return;
-    }
-
-    const transaction = db.transaction(['sentimentModel'], 'readonly');
-    const objectStore = transaction.objectStore('sentimentModel');
-
-    const request = objectStore.get(1);  // Fetch the model with the ID 1
-
-    request.onsuccess = (event) => {
-        const model = request.result;
-        if (model) {
-            positiveWords = model.positiveWords || positiveWords;
-            negativeWords = model.negativeWords || negativeWords;
-            positiveBigrams = model.positiveBigrams || positiveBigrams;
-            negativeBigrams = model.negativeBigrams || negativeBigrams;
-            positiveTrigrams = model.positiveTrigrams || positiveTrigrams;
-            negativeTrigrams = model.negativeTrigrams || negativeTrigrams;
-            zeroCount = model.zeroCount || 0;
-            fourCount = model.fourCount || 0;
-
-            console.log('Model loaded from IndexedDB');
-        } else {
-            console.log('No model found in IndexedDB');
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            console.error('Database is not initialized. Please ensure openDatabase() is called.');
+            reject('Database is not initialized.');
+            return;
         }
-    };
 
-    transaction.onerror = (event) => {
-        console.error('Error loading model from IndexedDB', event);
-    };
+        const transaction = db.transaction(['sentimentModel'], 'readonly');
+        const objectStore = transaction.objectStore('sentimentModel');
+
+        const request = objectStore.get(1);  // Fetch the model with the ID 1
+
+        request.onsuccess = (event) => {
+            const model = request.result;
+            if (model) {
+                positiveWords = model.positiveWords || positiveWords;
+                negativeWords = model.negativeWords || negativeWords;
+                positiveBigrams = model.positiveBigrams || positiveBigrams;
+                negativeBigrams = model.negativeBigrams || negativeBigrams;
+                positiveTrigrams = model.positiveTrigrams || positiveTrigrams;
+                negativeTrigrams = model.negativeTrigrams || negativeTrigrams;
+                zeroCount = model.zeroCount || 0;
+                fourCount = model.fourCount || 0;
+
+                console.log('Model loaded from IndexedDB');
+                resolve(true);  // Resolve the promise when successful
+            } else {
+                console.log('No model found in IndexedDB, training will be required.');
+                resolve(false); // Model needs to be trained
+            }
+        };
+
+        request.onerror = (event) => {
+            console.error('Error loading model from IndexedDB', event);
+            reject(event);
+        };
+    });
 }
 
 async function saveModel() {
@@ -621,6 +627,9 @@ async function getTrainingDataFromCsvAndDatabase(pathToCsv, trainingMode) {
     let csvDataPromise;
     zeroCount = 0;
     fourCount = 0;
+
+    await openDatabase();
+    await loadModel();
 
     // Fetch CSV data
     csvDataPromise = fetch(pathToCsv)
