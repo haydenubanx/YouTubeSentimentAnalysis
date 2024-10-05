@@ -1,14 +1,39 @@
 
 let isModelTrained2 = false;
+let currentVideoId = null;
 
 async function initializeModel2() {
-    return getTrainingDataFromCsvAndDatabase("trainingData/trainingData.csv").then(() => {
-        isModelTrained2 = true;  // Ensure global flag is set when trained
-        console.log('Model is now trained.');
-        return true;
-    }).catch(error => {
-        console.error('Model training failed:', error);
-        return false;
+
+    isModelTrained2 = true;
+
+    return new Promise((resolve, reject) => {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            if (tabs.length > 0) {
+                const activeTab = tabs[0];
+                // Ensure that the active tab is a valid URL
+                if (!activeTab.url.startsWith('chrome://') && !activeTab.url.startsWith('about://')) {
+                    // Send a message to the content script to trigger the model training
+                    chrome.runtime.sendMessage({ action: 'trainModelFromBackground' }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            console.error('Error sending message to content script:', chrome.runtime.lastError.message);
+                            reject(false);  // Reject the promise if there's an error in message sending
+                        } else if (response && response.success) {
+                            console.log('Model trained successfully.');
+                            resolve(true);  // Resolve the promise when the content script finishes training
+                        } else {
+                            console.error('Model training failed in content script.');
+                            reject(false);  // Reject if training fails
+                        }
+                    });
+                } else {
+                    // console.error('Cannot inject content script into restricted URL:', activeTab.url);
+                    // reject(false);  // Reject the promise if the URL is restricted
+                }
+            } else {
+                console.error('No active tab found.');
+                reject(false);  // Reject the promise if no active tab is found
+            }
+        });
     });
 }
 
@@ -16,70 +41,36 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'checkModelTrained') {
         sendResponse({ isModelTrained: isModelTrained2 });
     }
+    return true;
 });
 
 
 // Function to trigger model training daily
 function trainModelDaily() {
     return new Promise((resolve, reject) => {
+        isModelTrained2 = false;
 
-
-        initializeModel2().then(() => {
-            observeUrlChanges();  // Start observing changes
-        }).catch(() => {
-            console.log('Sentiment analysis disabled until the model is trained.');
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            if (tabs.length > 0) {
+                const activeTab = tabs[0];
+                if (!activeTab.url.startsWith('chrome://') && !activeTab.url.startsWith('about://')) {
+                    initializeModel2()
+                        .then(() => {
+                            resolve(true);  // Resolve the Promise
+                        })
+                        .catch((error) => {
+                            console.error('Training failed:', error);
+                            reject(false);  // Reject the Promise
+                        });
+                } else {
+                    // console.error('Cannot inject content script into restricted URL:', activeTab.url);
+                    // reject(false);
+                }
+            } else {
+                console.error('No active tab found.');
+                // reject(false);
+            }
         });
-
-
-        // chrome.storage.local.get('lastTrainingDate', (result) => {
-        //     const today = new Date();
-        //     const lastTrainingDate = new Date(result.lastTrainingDate || 0);
-        //
-        //     // Check if the model was not trained today
-        //     if (today.getDate() !== lastTrainingDate.getDate()) {
-        //         console.log("Training model...");
-        //
-        //         // Get the active tab
-        //         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        //             if (tabs.length > 0) {
-        //                 const activeTab = tabs[0];
-        //
-        //                 // Ensure the URL is valid (not chrome:// or about://)
-        //                 if (!activeTab.url.startsWith('chrome://') && !activeTab.url.startsWith('about://')) {
-        //                     // Inject the content script into the active tab
-        //                         // Send a message to the content script to start training the model
-        //                         chrome.tabs.sendMessage(activeTab.id, { action: 'trainModel' }, (response) => {
-        //                             if (chrome.runtime.lastError) {
-        //                                 console.error('Error sending message:', chrome.runtime.lastError.message);
-        //                                 reject('Error sending message to train model.');
-        //                                 return;
-        //                             }
-        //
-        //                             // Check if model training was successful
-        //                             if (response && response.modelTrained) {
-        //                                 chrome.storage.local.set({ lastTrainingDate: today.toISOString() }, () => {
-        //                                     console.log('Model trained successfully and date updated.');
-        //                                     resolve(true); // Resolve successfully after training
-        //                                 });
-        //                             } else {
-        //                                 console.error('Error training the model.');
-        //                                 reject('Model training failed.');
-        //                             }
-        //                         });
-        //                 } else {
-        //                     // console.error('Cannot inject content script into restricted URL:', activeTab.url);
-        //                     // reject('Cannot inject content script into restricted URL.');
-        //                 }
-        //             } else {
-        //                 console.error('No active tab found.');
-        //                 reject('No active tab found.');
-        //             }
-        //         });
-        //     } else {
-        //         console.log('Model already trained today. No need to train again.');
-        //         resolve(false); // Resolve with false if no training needed
-        //     }
-        // });
     });
 }
 
@@ -87,6 +78,7 @@ function trainModelDaily() {
 chrome.runtime.onInstalled.addListener(() => {
     console.log('Extension installed. Training model...');
     trainModelDaily();
+    return true;
 });
 
 // Setup an alarm to train daily at 3:00 AM
@@ -104,33 +96,37 @@ chrome.alarms.onAlarm.addListener((alarm) => {
             trainModelDaily();
         }
     }
+
+    return true;
 });
 
-// Listen for the message to trigger model training
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === 'trainModel') {
-        trainModelDaily()
-            .then(() => {
-                sendResponse({ modelTrained: true });
-            })
-            .catch((error) => {
-                sendResponse({ modelTrained: false, error: error });
-            });
-
-        return true; // Keep the message channel open until response is sent
-    }
-});
+// // Listen for the message to trigger model training
+// chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+//     if (message.action === 'trainModel') {
+//         trainModelDaily()
+//             .then(() => {
+//                 isModelTrained2 = true;
+//                 sendResponse({ isModelTrained: isModelTrained2 });
+//             })
+//             .catch((error) => {
+//                 isModelTrained2 = false;
+//                 sendResponse({ isModelTrained: isModelTrained2 });
+//             });
+//
+//         return true; // Keep the message channel open until response is sent
+//     }
+// });
 
 // Listen for clicks on the extension button
 chrome.action.onClicked.addListener((tab) => {
     // Ensure that sentiment analysis only starts once the model is trained
     trainModelDaily()
         .then((trained) => {
-            if (trained) {
-                sendResponse({ modelTrained: true });
+            if (isModelTrained2) {
+                sendResponse({ isModelTrained: isModelTrained2 });
                 console.log('Model was trained, starting sentiment analysis...');
             } else {
-                sendResponse({ modelTrained: false, error: error });
+                sendResponse({ isModelTrained: isModelTrained2 });
                 console.log('Model was already trained, proceeding with sentiment analysis...');
             }
             // Now that the model is trained, inject and start sentiment analysis
@@ -142,6 +138,8 @@ chrome.action.onClicked.addListener((tab) => {
         .catch((error) => {
             console.error('Error training the model or starting sentiment analysis:', error);
         });
+
+    return true;
 });
 
 
@@ -173,7 +171,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     }
 });
 
-let currentVideoId = null; // Global variable to store the current video ID
+
 
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     if (message.action === 'getVideoId') {
@@ -181,16 +179,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     } else if (message.action === 'sendVideoId' && message.videoId) {
         currentVideoId = message.videoId;  // Update video ID
     }
-    // // Handle model training
-    // else if (message.action === 'trainModel') {
-    //             console.log('Training data loaded:', trainingData);
-    //             sendResponse({ modelTrained: true })
-    //         .catch(error => {
-    //             console.error('Error loading training data:', error);
-    //             sendResponse({ modelTrained: false });
-    //         });
-    // }
-    return true;   // Keep the message channel open until response is sent
+    return true;
 });
 
 // Detect when a tab becomes active and check if it's a YouTube video tab
@@ -212,18 +201,6 @@ chrome.tabs.onActivated.addListener(activeInfo => {
     });
 });
 
-// chrome.runtime.onInstalled.addListener(() => {
-//     let csvUrl = chrome.runtime.getURL('trainingData/trainingData.csv');
-//     fetch(csvUrl)
-//         .then(response => response.text())
-//         .then(csvContent => {
-//             chrome.storage.local.set({ csvData: csvContent }, () => {
-//                 console.log('CSV data loaded into local storage.');
-//             });
-//         })
-//         .catch(error => console.error('Error loading CSV:', error));
-// });
-
 
 // Run sentiment analysis when the extension button is clicked
 chrome.action.onClicked.addListener((tab) => {
@@ -238,26 +215,6 @@ function startSentimentAnalysis() {
     chrome.runtime.sendMessage({ action: 'startSentimentAnalysis' });
 }
 
-// Load the CSV data on installation
-// chrome.runtime.onInstalled.addListener(() => {
-//     let csvUrl = chrome.runtime.getURL('trainingData/trainingData.csv');
-//     fetch(csvUrl)
-//         .then(response => {
-//             if (!response.ok) {
-//                 throw new Error(`HTTP error! status: ${response.status}`);
-//             }
-//             return response.text();
-//         })
-//         // .then(csvContent => {
-//         //     chrome.storage.local.set({ csvData: csvContent }, () => {
-//         //         console.log('CSV data loaded into local storage.');
-//         //     });
-//         // })
-//         .catch(error => {
-//             console.error('Error loading CSV:', error);
-//         });
-// });
-
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'trainModel') {
         let timeoutId = setTimeout(() => {
@@ -266,12 +223,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
         trainModelDaily()
             .then(() => {
-                clearTimeout(timeoutId);  // Clear the timeout
-                sendResponse({ modelTrained: true });
+                clearTimeout(timeoutId);
+                sendResponse({isModelTrained: isModelTrained2});
             })
             .catch(error => {
-                clearTimeout(timeoutId);  // Clear the timeout
-                sendResponse({ modelTrained: false });
+                console.error('Error Performing Retraining:', error);
+                sendResponse({isModelTrained: isModelTrained2});
             });
 
         return true;

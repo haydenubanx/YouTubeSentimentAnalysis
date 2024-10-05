@@ -10,7 +10,6 @@ initializeModel().then(() => {
 });
 
 
-
 async function sendCommentToDatabase(comment, sentiment) {
     const apiUrl = 'https://haydeneubanks.co.uk/includes/DbConnection/apiEndpoint.php';
 
@@ -97,7 +96,7 @@ async function initializeModelAndStartSentiment() {
 
 function checkModelTrainedStatus() {
     return new Promise((resolve) => {
-        chrome.runtime.sendMessage({ action: 'checkModelTrained' }, (response) => {
+        chrome.runtime.sendMessage({action: 'checkModelTrained'}, (response) => {
             if (response.isModelTrained) {
                 isModelTrained = true;
                 resolve(true);
@@ -300,13 +299,11 @@ function retryFetchVideoId() {
 }
 
 function sendVideoId(videoId) {
-    chrome.storage.local.set({ lastVideoId: videoId }, () => {
+    chrome.storage.local.set({lastVideoId: videoId}, () => {
         console.log('Video ID stored successfully:', videoId);
     });
-    chrome.runtime.sendMessage({ action: 'sendVideoId', videoId: videoId });
+    chrome.runtime.sendMessage({action: 'sendVideoId', videoId: videoId});
 }
-
-
 
 
 let allCommentsData = []; // Global variable to store all comments after sentiment analysis
@@ -540,7 +537,7 @@ async function modifyCommentSection(overallSentiment, overallSentimentProbabilit
     });
 
     // Check if the sentimentParagraph already exists
-    let sentimentParagraph = document.querySelector('#sentimentParagraph');
+    let sentimentParagraph = document.querySelector('.sentimentParagraph');
 
     if (sentimentParagraph) {
         // If it exists, update the content with new stats
@@ -565,6 +562,7 @@ async function modifyCommentSection(overallSentiment, overallSentimentProbabilit
         // If it doesn't exist, create a new paragraph element
         sentimentParagraph = document.createElement('p');
         sentimentParagraph.id = 'sentimentParagraph';
+        sentimentParagraph.className = 'sentimentParagraph';
 
         sentimentParagraph.innerHTML = `<span style="color:white;">Overall Comment Sentiment: </span>`;
 
@@ -689,21 +687,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === 'trainModel') {
+    if (message.action === 'trainModelFromBackground') {
+
+        isModelTrained = false;
+
         console.log('Received message to train the model.');
 
         // Train the model and send a response
         getTrainingDataFromCsvAndDatabase('trainingData/trainingData.csv')
             .then(() => {
                 isModelTrained = true;
-                chrome.storage.local.set({ isModelTrained: true }, () => {
-                    console.log('Model trained successfully.');
-                    sendResponse({ modelTrained: true });
-                });
+                console.log('Model trained successfully.');
+                sendResponse({success: isModelTrained});
             })
             .catch((error) => {
                 console.error('Error during model training:', error);
-                sendResponse({ modelTrained: false });
+                sendResponse({success: isModelTrained});
             });
 
         return true;  // Keep the message channel open until response is sent
@@ -743,12 +742,12 @@ document.addEventListener('DOMContentLoaded', function () {
         disableButtonsAndShowLoading();  // Disable buttons and show loading
 
         // Send a message to trigger model retraining
-        chrome.runtime.sendMessage({ action: 'trainModel' }, (response) => {
-            if (response && response.modelTrained) {
+        chrome.runtime.sendMessage({action: 'trainModel'}, (response) => {
+            if (response.isModelTrained) {
                 console.log('Model retrained successfully.');
 
                 // Once retraining is done, fetch comments again
-                chrome.runtime.sendMessage({ action: 'getVideoId' }, (response) => {
+                chrome.runtime.sendMessage({action: 'getVideoId'}, (response) => {
                     if (response.videoId) {
                         fetchYoutubeCommentsVideoId(response.videoId)
                             .then(() => {
