@@ -32,6 +32,7 @@
 
         /* Main container styling */
         .container {
+            position: relative;
             background-color: #242424; /* Deep grey */
             border-radius: 15px;
             box-shadow: 0px 12px 35px rgba(0, 0, 0, 0.3); /* Deeper shadow for modern look */
@@ -131,6 +132,25 @@
             color: #f5f5f5;
             margin-bottom: 25px;
             animation: pulse 1.5s infinite;
+        }
+
+        #retrain-button {
+            padding: 8px 16px;
+            margin-bottom: 1em;
+            font-size: 12px;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #ff5722;
+            color: #fff;
+            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            z-index: 100;
+        }
+
+        #retrain-button:hover {
+            background-color: #ff3d00; /* Slightly darker on hover */
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4);
         }
 
         /* Keyframe for loading pulse animation */

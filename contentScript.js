@@ -745,6 +745,7 @@ document.addEventListener('DOMContentLoaded', function () {
         chrome.runtime.sendMessage({action: 'trainModel'}, (response) => {
             if (response.isModelTrained) {
                 console.log('Model retrained successfully.');
+                observeUrlChanges();
 
                 // Once retraining is done, fetch comments again
                 chrome.runtime.sendMessage({action: 'getVideoId'}, (response) => {

@@ -470,7 +470,7 @@ let negativeTrigrams = {
 let zeroCount = 0;
 let fourCount = 0;
 let trainingIterations = 2;
-let retrainTrainingIterations = 8;
+let retrainTrainingIterations = 15;
 
 let apiBaseUrl = 'https://youtube.googleapis.com/youtube/v3';
 let key = "AIzaSyBav8jQwmVNxRFk4Q2FcviOHnUwbJjM8cU";
@@ -850,7 +850,7 @@ function calculateSentimentScore(commentText) {
     let negate = false;
 
     for (let i = 0; i < words.length; i++) {
-        let word = words[i];
+        let word = words[i].toLowerCase();
 
         // Handle negation
         if (negationWords.includes(word)) {
@@ -878,11 +878,19 @@ function calculateSentimentScore(commentText) {
             }
         }
 
+        //Handle emojis
+        if (emojiSentiment[words[i]]) {
+            score += emojiSentiment[words[i]];
+            continue;  // Skip further processing for this emoji
+        }
+
         // Check for single words
         if (positiveWords[word]) {
             score += negate ? -positiveWords[word] : positiveWords[word];
         } else if (negativeWords[word]) {
             score += negate ? negativeWords[word] : -negativeWords[word];
+        } else if (neutralWords[word]) {
+            score += neutralWords[word];  // Neutral words contribute a fixed value
         }
 
         negate = false; // Reset negation after processing a word
