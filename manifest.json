@@ -19,11 +19,13 @@
   },
   "host_permissions": [
     "https://www.youtube.com/*",
-    "https://youtube.googleapis.com/*"
+    "https://youtube.googleapis.com/*",
+    "https://googleads.g.doubleclick.net/"
   ],
   "permissions": [
     "tabs",
     "alarms",
+    "cookies",
     "activeTab",
     "scripting",
     "storage"

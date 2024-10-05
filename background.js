@@ -1,57 +1,85 @@
 
+let isModelTrained2 = false;
+
+async function initializeModel2() {
+    return getTrainingDataFromCsvAndDatabase("trainingData/trainingData.csv").then(() => {
+        isModelTrained2 = true;  // Ensure global flag is set when trained
+        console.log('Model is now trained.');
+        return true;
+    }).catch(error => {
+        console.error('Model training failed:', error);
+        return false;
+    });
+}
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === 'checkModelTrained') {
+        sendResponse({ isModelTrained: isModelTrained2 });
+    }
+});
+
 
 // Function to trigger model training daily
 function trainModelDaily() {
     return new Promise((resolve, reject) => {
-        chrome.storage.local.get('lastTrainingDate', (result) => {
-            const today = new Date();
-            const lastTrainingDate = new Date(result.lastTrainingDate || 0);
 
-            // Check if the model was not trained today
-            if (today.getDate() !== lastTrainingDate.getDate()) {
-                console.log("Training model...");
 
-                // Get the active tab
-                chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-                    if (tabs.length > 0) {
-                        const activeTab = tabs[0];
-
-                        // Ensure the URL is valid (not chrome:// or about://)
-                        if (!activeTab.url.startsWith('chrome://') && !activeTab.url.startsWith('about://')) {
-                            // Inject the content script into the active tab
-                                // Send a message to the content script to start training the model
-                                chrome.tabs.sendMessage(activeTab.id, { action: 'trainModel' }, (response) => {
-                                    if (chrome.runtime.lastError) {
-                                        console.error('Error sending message:', chrome.runtime.lastError.message);
-                                        reject('Error sending message to train model.');
-                                        return;
-                                    }
-
-                                    // Check if model training was successful
-                                    if (response && response.modelTrained) {
-                                        chrome.storage.local.set({ lastTrainingDate: today.toISOString() }, () => {
-                                            console.log('Model trained successfully and date updated.');
-                                            resolve(true); // Resolve successfully after training
-                                        });
-                                    } else {
-                                        console.error('Error training the model.');
-                                        reject('Model training failed.');
-                                    }
-                                });
-                        } else {
-                            // console.error('Cannot inject content script into restricted URL:', activeTab.url);
-                            // reject('Cannot inject content script into restricted URL.');
-                        }
-                    } else {
-                        console.error('No active tab found.');
-                        reject('No active tab found.');
-                    }
-                });
-            } else {
-                console.log('Model already trained today. No need to train again.');
-                resolve(false); // Resolve with false if no training needed
-            }
+        initializeModel2().then(() => {
+            observeUrlChanges();  // Start observing changes
+        }).catch(() => {
+            console.log('Sentiment analysis disabled until the model is trained.');
         });
+
+
+        // chrome.storage.local.get('lastTrainingDate', (result) => {
+        //     const today = new Date();
+        //     const lastTrainingDate = new Date(result.lastTrainingDate || 0);
+        //
+        //     // Check if the model was not trained today
+        //     if (today.getDate() !== lastTrainingDate.getDate()) {
+        //         console.log("Training model...");
+        //
+        //         // Get the active tab
+        //         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        //             if (tabs.length > 0) {
+        //                 const activeTab = tabs[0];
+        //
+        //                 // Ensure the URL is valid (not chrome:// or about://)
+        //                 if (!activeTab.url.startsWith('chrome://') && !activeTab.url.startsWith('about://')) {
+        //                     // Inject the content script into the active tab
+        //                         // Send a message to the content script to start training the model
+        //                         chrome.tabs.sendMessage(activeTab.id, { action: 'trainModel' }, (response) => {
+        //                             if (chrome.runtime.lastError) {
+        //                                 console.error('Error sending message:', chrome.runtime.lastError.message);
+        //                                 reject('Error sending message to train model.');
+        //                                 return;
+        //                             }
+        //
+        //                             // Check if model training was successful
+        //                             if (response && response.modelTrained) {
+        //                                 chrome.storage.local.set({ lastTrainingDate: today.toISOString() }, () => {
+        //                                     console.log('Model trained successfully and date updated.');
+        //                                     resolve(true); // Resolve successfully after training
+        //                                 });
+        //                             } else {
+        //                                 console.error('Error training the model.');
+        //                                 reject('Model training failed.');
+        //                             }
+        //                         });
+        //                 } else {
+        //                     // console.error('Cannot inject content script into restricted URL:', activeTab.url);
+        //                     // reject('Cannot inject content script into restricted URL.');
+        //                 }
+        //             } else {
+        //                 console.error('No active tab found.');
+        //                 reject('No active tab found.');
+        //             }
+        //         });
+        //     } else {
+        //         console.log('Model already trained today. No need to train again.');
+        //         resolve(false); // Resolve with false if no training needed
+        //     }
+        // });
     });
 }
 
@@ -99,15 +127,17 @@ chrome.action.onClicked.addListener((tab) => {
     trainModelDaily()
         .then((trained) => {
             if (trained) {
+                sendResponse({ modelTrained: true });
                 console.log('Model was trained, starting sentiment analysis...');
             } else {
+                sendResponse({ modelTrained: false, error: error });
                 console.log('Model was already trained, proceeding with sentiment analysis...');
             }
             // Now that the model is trained, inject and start sentiment analysis
-            chrome.scripting.executeScript({
-                target: { tabId: tab.id },
-                function: startSentimentAnalysis // This function runs in the content script
-            });
+            // chrome.scripting.executeScript({
+            //     target: { tabId: tab.id },
+            //     function: startSentimentAnalysis // This function runs in the content script
+            // });
         })
         .catch((error) => {
             console.error('Error training the model or starting sentiment analysis:', error);

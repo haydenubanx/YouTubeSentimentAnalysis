@@ -38,10 +38,10 @@ let negativeWords = {
     "tragic": 3.0, "trash": 2.5, "ugliness": 2.5, "unbearable": 2.5, "undesirable": 2.0,
     "unfortunate": 2.5, "unhappy": 2.0, "unpleasant": 2.0, "unreliable": 2.5, "upset": 2.5,
     "useless": 2.5, "victim": 2.0, "violent": 3.0, "vulgar": 2.5,
-    "wicked": 3.0, "worried": 2.5,  "wrecked": 2.0, "wrong": 2.0,
+    "wicked": 3.0, "worried": 2.5, "wrecked": 2.0, "wrong": 2.0,
     "cringey": 2.5, "troll": 2.0, "clown": 2.0, "dumb": 2.0, "salty": 2.0,
-     "L": 2.0, "rage": 2.5, "noob": 2.0,
-     "nuke": 2.5, "bot": 2.0, "hater": 2.5, "yikes": 2.0,
+    "L": 2.0, "rage": 2.5, "noob": 2.0,
+    "nuke": 2.5, "bot": 2.0, "hater": 2.5, "yikes": 2.0,
     "nerfed": 2.0, "sus": 2.0, "flame": 2.5, "burn": 2.0,
     "weak": 2.0, "washed": 2.0, "thirsty": 2.0, "toxic": 3.0, "triggered": 2.5,
     "ghosted": 2.0, "busted": 2.0, "cancel": 3.0, "flop": 2.0, "booted": 2.0,
@@ -52,90 +52,357 @@ let negativeWords = {
 
 // Pre-populated positive words with associated weights
 let positiveWords = {
-    "amazing": 3.0, "awesome": 3.0, "beautiful": 2.5, "bliss": 2.5, "brilliant": 3.0,
-    "cheerful": 2.5, "delightful": 2.5, "ecstatic": 3.0, "elegant": 2.5, "excellent": 3.0,
-    "fantastic": 3.0, "glad": 2.0, "happy": 3.0, "honest": 2.5,
-    "incredible": 3.0, "joy": 2.5, "kind": 2.0, "love": 3.0, "lucky": 2.5,
-      "peaceful": 2.0, "perfect": 3.0, "pleasant": 2.5,
-    "wonderful": 3.0,  "zest": 2.5,
-    "nice": 2.5, "thanks": 3.0, "good": 3.0, "great": 3.0, "lovely": 3.0,
-    "admire": 3.0, "adorable": 2.5, "adventurous": 2.5, "affectionate": 3.0, "ambitious": 2.5,
-    "appreciative": 2.5, "astounding": 3.0, "authentic": 2.5,  "blissful": 3.0,
-    "calm": 2.0, "captivating": 3.0, "charming": 2.5, "compassionate": 2.5, "confident": 2.5,
-    "courageous": 2.5, "creative": 2.5, "dazzling": 3.0, "dedicated": 2.5, "eager": 2.0,
-    "enthusiastic": 2.5, "faithful": 2.5,
-    "genius": 3.0,  "inspiring": 3.0,
-    "intelligent": 3.0, "magical": 3.0,
-    "phenomenal": 3.0, "playful": 2.5,
-     "refreshing": 2.5,  "respected": 2.5,
-    "rewarding": 2.5, "satisfying": 2.5, "spectacular": 3.0,
-   "trustworthy": 2.5,  "visionary": 2.5,
-    "delight": 3.0, "radiate": 2.5, "kindhearted": 2.5,
-    "charitable": 2.5, "compelling": 2.5, "amused": 2.5, "elated": 3.0, "uplifted": 3.0,
-    "exhilarated": 3.0, "joyful": 3.0, "comforted": 2.5, "content": 2.5,
-    "fantabulous": 3.0,"radiating": 3.0, "breathtaking": 3.0,
-    "wonderstruck": 3.0, "gleaming": 2.5, "adoring": 3.0, "sublime": 3.0,
-    "mesmerizing": 3.0, "enchanting": 3.0, "thriving": 2.5, "vital": 2.5,
-    "flourish": 3.0, "uplift": 2.5,  "heartwarming": 3.0, "zeal": 2.5,
+    "amazing": 3.0,
+    "awesome": 3.0,
+    "beautiful": 2.5,
+    "bliss": 2.5,
+    "brilliant": 3.0,
+    "cheerful": 2.5,
+    "delightful": 2.5,
+    "ecstatic": 3.0,
+    "elegant": 2.5,
+    "excellent": 3.0,
+    "fantastic": 3.0,
+    "glad": 2.0,
+    "happy": 3.0,
+    "honest": 2.5,
+    "incredible": 3.0,
+    "joy": 2.5,
+    "kind": 2.0,
+    "love": 3.0,
+    "lucky": 2.5,
+    "peaceful": 2.0,
+    "perfect": 3.0,
+    "pleasant": 2.5,
+    "wonderful": 3.0,
+    "zest": 2.5,
+    "nice": 2.5,
+    "thanks": 3.0,
+    "good": 3.0,
+    "great": 3.0,
+    "lovely": 3.0,
+    "admire": 3.0,
+    "adorable": 2.5,
+    "adventurous": 2.5,
+    "affectionate": 3.0,
+    "ambitious": 2.5,
+    "appreciative": 2.5,
+    "astounding": 3.0,
+    "authentic": 2.5,
+    "blissful": 3.0,
+    "calm": 2.0,
+    "captivating": 3.0,
+    "charming": 2.5,
+    "compassionate": 2.5,
+    "confident": 2.5,
+    "courageous": 2.5,
+    "creative": 2.5,
+    "dazzling": 3.0,
+    "dedicated": 2.5,
+    "eager": 2.0,
+    "enthusiastic": 2.5,
+    "faithful": 2.5,
+    "genius": 3.0,
+    "inspiring": 3.0,
+    "intelligent": 3.0,
+    "magical": 3.0,
+    "phenomenal": 3.0,
+    "playful": 2.5,
+    "refreshing": 2.5,
+    "respected": 2.5,
+    "rewarding": 2.5,
+    "satisfying": 2.5,
+    "spectacular": 3.0,
+    "trustworthy": 2.5,
+    "visionary": 2.5,
+    "delight": 3.0,
+    "radiate": 2.5,
+    "kindhearted": 2.5,
+    "charitable": 2.5,
+    "compelling": 2.5,
+    "amused": 2.5,
+    "elated": 3.0,
+    "uplifted": 3.0,
+    "exhilarated": 3.0,
+    "joyful": 3.0,
+    "comforted": 2.5,
+    "content": 2.5,
+    "fantabulous": 3.0,
+    "radiating": 3.0,
+    "breathtaking": 3.0,
+    "wonderstruck": 3.0,
+    "gleaming": 2.5,
+    "adoring": 3.0,
+    "sublime": 3.0,
+    "mesmerizing": 3.0,
+    "enchanting": 3.0,
+    "thriving": 2.5,
+    "vital": 2.5,
+    "flourish": 3.0,
+    "uplift": 2.5,
+    "heartwarming": 3.0,
+    "zeal": 2.5,
     "radiance": 3.0,
-    "endearing": 2.5, "sparkling": 3.0, "delighted": 3.0, "exuberant": 3.0,
-     "compassion": 3.0, "brave": 2.5,
-    "trusting": 2.5,"vivacious": 3.0, "bubbly": 2.5, "zippy": 2.5,
-    "cheery": 2.5, "jaunty": 2.5, "spunky": 2.5, "exquisite": 3.0,
-    "diligent": 2.5, "amiable": 2.5,
+    "endearing": 2.5,
+    "sparkling": 3.0,
+    "delighted": 3.0,
+    "exuberant": 3.0,
+    "compassion": 3.0,
+    "brave": 2.5,
+    "trusting": 2.5,
+    "vivacious": 3.0,
+    "bubbly": 2.5,
+    "zippy": 2.5,
+    "cheery": 2.5,
+    "jaunty": 2.5,
+    "spunky": 2.5,
+    "exquisite": 3.0,
+    "diligent": 2.5,
+    "amiable": 2.5,
     "blessed": 3.0,
-    "balanced": 2.5, "benevolent": 3.0, "blissfully": 3.0,
-    "fulfilling": 3.0,  "gratified": 3.0, "gracefully": 2.5,
-    "innovative": 3.0, "kindness": 2.5,
-    "motivational": 2.5, "noteworthy": 2.5, "optimism": 2.5,
-    "peacefully": 2.5, "positivity": 2.5, "praiseworthy": 3.0,  "prosperity": 2.5,
-    "radiantly": 3.0, "refreshed": 3.0, "remarkably": 3.0, "resilience": 2.5,
-    "shimmering": 3.0, "sincere": 2.5, "spiritually": 2.5,
-    "stupendous": 3.0, "supportively": 2.5, "trustfully": 2.5,
-     "unflinching": 2.5, "victory": 3.0, "vigorously": 2.5, "vivaciously": 3.0,
+    "balanced": 2.5,
+    "benevolent": 3.0,
+    "blissfully": 3.0,
+    "fulfilling": 3.0,
+    "gratified": 3.0,
+    "gracefully": 2.5,
+    "innovative": 3.0,
+    "kindness": 2.5,
+    "motivational": 2.5,
+    "noteworthy": 2.5,
+    "optimism": 2.5,
+    "peacefully": 2.5,
+    "positivity": 2.5,
+    "praiseworthy": 3.0,
+    "prosperity": 2.5,
+    "radiantly": 3.0,
+    "refreshed": 3.0,
+    "remarkably": 3.0,
+    "resilience": 2.5,
+    "shimmering": 3.0,
+    "sincere": 2.5,
+    "spiritually": 2.5,
+    "stupendous": 3.0,
+    "supportively": 2.5,
+    "trustfully": 2.5,
+    "unflinching": 2.5,
+    "victory": 3.0,
+    "vigorously": 2.5,
+    "vivaciously": 3.0,
     "youthfully": 2.5,
-    "admirable": 2.5, "commendable": 2.5, "dazzlingly": 3.0, "dependable": 2.5, "devoted": 2.5, "dignified": 2.5, "discerning": 2.5, "dynamic": 2.5,
-    "ebullient": 3.0, "eclectic": 2.5, "effervescent": 3.0, "efficacious": 3.0, "elevated": 2.5,
-    "empathetic": 2.5, "empowered": 2.5, "encouraged": 2.5, "endowed": 2.5, "enlightened": 3.0,
-    "enriching": 2.5, "enthralling": 3.0, "entranced": 3.0, "epic": 3.0, "esteemed": 3.0,
-    "eternal": 2.5, "euphoric": 3.0, "evolved": 2.5, "exalted": 3.0, "exceptional": 3.0,
-    "excited": 3.0, "exemplary": 2.5, "exhilarating": 3.0, "expansive": 2.5, "expressive": 2.5,
-    "extraordinary": 3.0, "fabulous": 3.0, "fair": 2.5, "fanciful": 2.5, "fearless": 2.5,
-    "festive": 3.0, "fit": 2.5, "flawless": 3.0, "flourishing": 3.0, "focused": 2.5,
-    "fortunate": 3.0, "free": 2.5, "friendly": 2.5, "fulfilled": 3.0, "fun": 2.5,
-    "gallant": 2.5, "generous": 3.0, "genial": 2.5, "genuine": 2.5, "gifted": 2.5,
-    "glamorous": 3.0, "gleeful": 3.0, "glimmering": 3.0, "glorious": 3.0, "glowing": 3.0,
-    "grace": 2.5, "graceful": 3.0, "gracious": 2.5, "grand": 3.0, "grateful": 2.5,
-    "greathearted": 3.0, "gregarious": 2.5, "gutsy": 2.5, "hardworking": 2.5, "harmonious": 2.5,
-    "healing": 2.5, "heartening": 2.5, "hearty": 2.5, "heavenly": 3.0, "helpful": 2.5,
-    "heroic": 3.0, "honorable": 2.5, "hopeful": 2.5, "hospitable": 2.5, "humble": 2.5,
-    "humorous": 2.5, "idealistic": 2.5, "illuminating": 3.0, "imaginative": 3.0, "impeccable": 3.0,
-    "impressive": 3.0, "incomparable": 3.0, "influential": 3.0, "inspirational": 3.0, "inspired": 3.0,
-    "intrepid": 2.5, "inventive": 2.5, "jolly": 2.5, "jovial": 2.5, "joyous": 3.0,
-    "jubilant": 3.0, "just": 2.5, "keen": 2.5, "laudable": 2.5, "lavish": 3.0,
-    "legendary": 3.0, "lighthearted": 2.5, "lively": 2.5, "loyal": 2.5, "luminous": 3.0,
-    "luxurious": 3.0, "magnanimous": 3.0, "magnificent": 3.0, "majestic": 3.0, "marvelous": 3.0,
-    "masterful": 3.0, "meaningful": 2.5, "mellow": 2.5, "meritorious": 2.5, "mindful": 2.5,
-    "miraculous": 3.0, "modest": 2.5, "motivated": 2.5, "noble": 2.5, "nurturing": 2.5,
-    "openhearted": 2.5, "optimistic": 2.5, "outstanding": 3.0, "passionate": 3.0, "patient": 2.5,
-    "peaceable": 2.5, "peerless": 3.0, "perceptive": 2.5, "perseverant": 2.5, "philanthropic": 2.5,
-    "picturesque": 3.0, "plucky": 2.5, "poised": 2.5, "polished": 3.0, "positive": 3.0,
-    "powerful": 3.0, "precious": 3.0, "priceless": 3.0, "proactive": 2.5, "prodigious": 3.0,
-    "profound": 3.0, "prominent": 2.5, "prosperous": 3.0, "pure": 2.5, "radiant": 3.0,
-    "rapturous": 3.0, "rare": 2.5, "reassured": 2.5, "refined": 3.0, "reliable": 2.5,
-    "remarkable": 3.0, "resilient": 2.5, "resolute": 2.5, "resourceful": 2.5, "respectful": 2.5,
-    "revered": 2.5, "rewarded": 3.0, "robust": 2.5, "sacred": 2.5, "sagacious": 2.5,
-    "satisfied": 3.0, "secure": 2.5, "selfless": 2.5, "sensational": 3.0, "serendipitous": 2.5,
-    "serene": 2.5, "shining": 3.0, "skillful": 2.5, "soaring": 3.0, "spirited": 2.5,
-    "splendid": 3.0, "spontaneous": 2.5, "steadfast": 2.5, "stellar": 3.0, "stunning": 3.0,
-    "successful": 3.0, "sunny": 2.5, "superb": 3.0, "supportive": 2.5, "supreme": 3.0,
-    "sympathetic": 2.5, "talented": 3.0, "tenacious": 2.5, "terrific": 3.0, "thankful": 2.5,
-    "thoughtful": 2.5, "thrilled": 3.0, "tranquil": 2.5, "transformative": 2.5, "triumphant": 3.0,
-    "truthful": 2.5, "unbelievable": 3.0, "undaunted": 2.5, "unforgettable": 3.0, "unique": 3.0,
-    "uplifting": 2.5, "valiant": 2.5, "valued": 2.5, "venerated": 3.0, "vibrant": 3.0,
-    "victorious": 3.0, "vigorous": 2.5, "virtuous": 2.5, "vivid": 2.5, "warmhearted": 3.0,
-    "welcoming": 2.5, "wholesome": 3.0, "wise": 2.5, "wondrous": 3.0, "worthy": 2.5,
-    "youthful": 2.5, "zany": 2.5, "zestful": 2.5, "zingy": 2.5, "zealous": 2.5
+    "admirable": 2.5,
+    "commendable": 2.5,
+    "dazzlingly": 3.0,
+    "dependable": 2.5,
+    "devoted": 2.5,
+    "dignified": 2.5,
+    "discerning": 2.5,
+    "dynamic": 2.5,
+    "ebullient": 3.0,
+    "eclectic": 2.5,
+    "effervescent": 3.0,
+    "efficacious": 3.0,
+    "elevated": 2.5,
+    "empathetic": 2.5,
+    "empowered": 2.5,
+    "encouraged": 2.5,
+    "endowed": 2.5,
+    "enlightened": 3.0,
+    "enriching": 2.5,
+    "enthralling": 3.0,
+    "entranced": 3.0,
+    "epic": 3.0,
+    "esteemed": 3.0,
+    "eternal": 2.5,
+    "euphoric": 3.0,
+    "evolved": 2.5,
+    "exalted": 3.0,
+    "exceptional": 3.0,
+    "excited": 3.0,
+    "exemplary": 2.5,
+    "exhilarating": 3.0,
+    "expansive": 2.5,
+    "expressive": 2.5,
+    "extraordinary": 3.0,
+    "fabulous": 3.0,
+    "fair": 2.5,
+    "fanciful": 2.5,
+    "fearless": 2.5,
+    "festive": 3.0,
+    "fit": 2.5,
+    "flawless": 3.0,
+    "flourishing": 3.0,
+    "focused": 2.5,
+    "fortunate": 3.0,
+    "free": 2.5,
+    "friendly": 2.5,
+    "fulfilled": 3.0,
+    "fun": 2.5,
+    "gallant": 2.5,
+    "generous": 3.0,
+    "genial": 2.5,
+    "genuine": 2.5,
+    "gifted": 2.5,
+    "glamorous": 3.0,
+    "gleeful": 3.0,
+    "glimmering": 3.0,
+    "glorious": 3.0,
+    "glowing": 3.0,
+    "grace": 2.5,
+    "graceful": 3.0,
+    "gracious": 2.5,
+    "grand": 3.0,
+    "grateful": 2.5,
+    "greathearted": 3.0,
+    "gregarious": 2.5,
+    "gutsy": 2.5,
+    "hardworking": 2.5,
+    "harmonious": 2.5,
+    "healing": 2.5,
+    "heartening": 2.5,
+    "hearty": 2.5,
+    "heavenly": 3.0,
+    "helpful": 2.5,
+    "heroic": 3.0,
+    "honorable": 2.5,
+    "hopeful": 2.5,
+    "hospitable": 2.5,
+    "humble": 2.5,
+    "humorous": 2.5,
+    "idealistic": 2.5,
+    "illuminating": 3.0,
+    "imaginative": 3.0,
+    "impeccable": 3.0,
+    "impressive": 3.0,
+    "incomparable": 3.0,
+    "influential": 3.0,
+    "inspirational": 3.0,
+    "inspired": 3.0,
+    "intrepid": 2.5,
+    "inventive": 2.5,
+    "jolly": 2.5,
+    "jovial": 2.5,
+    "joyous": 3.0,
+    "jubilant": 3.0,
+    "just": 2.5,
+    "keen": 2.5,
+    "laudable": 2.5,
+    "lavish": 3.0,
+    "legendary": 3.0,
+    "lighthearted": 2.5,
+    "lively": 2.5,
+    "loyal": 2.5,
+    "luminous": 3.0,
+    "luxurious": 3.0,
+    "magnanimous": 3.0,
+    "magnificent": 3.0,
+    "majestic": 3.0,
+    "marvelous": 3.0,
+    "masterful": 3.0,
+    "meaningful": 2.5,
+    "mellow": 2.5,
+    "meritorious": 2.5,
+    "mindful": 2.5,
+    "miraculous": 3.0,
+    "modest": 2.5,
+    "motivated": 2.5,
+    "noble": 2.5,
+    "nurturing": 2.5,
+    "openhearted": 2.5,
+    "optimistic": 2.5,
+    "outstanding": 3.0,
+    "passionate": 3.0,
+    "patient": 2.5,
+    "peaceable": 2.5,
+    "peerless": 3.0,
+    "perceptive": 2.5,
+    "perseverant": 2.5,
+    "philanthropic": 2.5,
+    "picturesque": 3.0,
+    "plucky": 2.5,
+    "poised": 2.5,
+    "polished": 3.0,
+    "positive": 3.0,
+    "powerful": 3.0,
+    "precious": 3.0,
+    "priceless": 3.0,
+    "proactive": 2.5,
+    "prodigious": 3.0,
+    "profound": 3.0,
+    "prominent": 2.5,
+    "prosperous": 3.0,
+    "pure": 2.5,
+    "radiant": 3.0,
+    "rapturous": 3.0,
+    "rare": 2.5,
+    "reassured": 2.5,
+    "refined": 3.0,
+    "reliable": 2.5,
+    "remarkable": 3.0,
+    "resilient": 2.5,
+    "resolute": 2.5,
+    "resourceful": 2.5,
+    "respectful": 2.5,
+    "revered": 2.5,
+    "rewarded": 3.0,
+    "robust": 2.5,
+    "sacred": 2.5,
+    "sagacious": 2.5,
+    "satisfied": 3.0,
+    "secure": 2.5,
+    "selfless": 2.5,
+    "sensational": 3.0,
+    "serendipitous": 2.5,
+    "serene": 2.5,
+    "shining": 3.0,
+    "skillful": 2.5,
+    "soaring": 3.0,
+    "spirited": 2.5,
+    "splendid": 3.0,
+    "spontaneous": 2.5,
+    "steadfast": 2.5,
+    "stellar": 3.0,
+    "stunning": 3.0,
+    "successful": 3.0,
+    "sunny": 2.5,
+    "superb": 3.0,
+    "supportive": 2.5,
+    "supreme": 3.0,
+    "sympathetic": 2.5,
+    "talented": 3.0,
+    "tenacious": 2.5,
+    "terrific": 3.0,
+    "thankful": 2.5,
+    "thoughtful": 2.5,
+    "thrilled": 3.0,
+    "tranquil": 2.5,
+    "transformative": 2.5,
+    "triumphant": 3.0,
+    "truthful": 2.5,
+    "unbelievable": 3.0,
+    "undaunted": 2.5,
+    "unforgettable": 3.0,
+    "unique": 3.0,
+    "uplifting": 2.5,
+    "valiant": 2.5,
+    "valued": 2.5,
+    "venerated": 3.0,
+    "vibrant": 3.0,
+    "victorious": 3.0,
+    "vigorous": 2.5,
+    "virtuous": 2.5,
+    "vivid": 2.5,
+    "warmhearted": 3.0,
+    "welcoming": 2.5,
+    "wholesome": 3.0,
+    "wise": 2.5,
+    "wondrous": 3.0,
+    "worthy": 2.5,
+    "youthful": 2.5,
+    "zany": 2.5,
+    "zestful": 2.5,
+    "zingy": 2.5,
+    "zealous": 2.5
 };
 
 // Pre-populated neutral words with associated weights
@@ -202,7 +469,7 @@ let negativeTrigrams = {
 
 let zeroCount = 0;
 let fourCount = 0;
-let trainingIterations = 8;
+let trainingIterations = 4;
 
 let apiBaseUrl = 'https://youtube.googleapis.com/youtube/v3';
 let key = "AIzaSyBav8jQwmVNxRFk4Q2FcviOHnUwbJjM8cU";
@@ -237,31 +504,29 @@ async function fetchCommentsFromDatabase() {
 }
 
 async function getTrainingDataFromCsvAndDatabase(pathToCsv) {
+    let csvDataPromise;
     zeroCount = 0;
     fourCount = 0;
 
     // Fetch CSV data
-    const csvDataPromise = await fetch(pathToCsv)
-        .then(async response => {
+    csvDataPromise = fetch(pathToCsv)
+        .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            const csvContent = await csvDataPromise.text();
-            if (!csvContent || csvContent.length === 0) {
-                throw new Error('CSV content is empty.');
-            }
-
-            // Parse and process the CSV content
-            const parsedData = parseCSV(csvContent);
-            if (!parsedData || parsedData.length === 0) {
-                throw new Error('Parsed CSV data is empty.');
-            }
-            return response.text();
+            return response.text(); // Resolve to text (assuming CSV format)
         })
         .then(csvContent => {
             console.log("CSV Content Loaded Successfully");
-            let allData = parseCSV(csvContent); // Parse CSV data
-            return allData.map(row => [parseInt(row[0], 10), row[1]]); // Ensure column 0 (label) is integer
+            let allData = parseCSV(csvContent); // Parse CSV using your `parseCSV` function
+            if (!allData || allData.length === 0) {
+                throw new Error("Parsed CSV data is empty or undefined");
+            }
+            return allData.map(row => [parseInt(row[0], 10), row[1]]); // Format as needed
+        })
+        .catch(error => {
+            console.error('Error fetching CSV data:', error);
+            return []; // Return empty in case of error
         });
 
     // Fetch database comments
@@ -316,89 +581,89 @@ async function getTrainingDataFromCsvAndDatabase(pathToCsv) {
             }
 
             // After training, store the training status
-            chrome.storage.local.set({ isModelTrained: true }, () => {
-                console.log('Model training completed and stored as trained.');
-            });
+            isModelTrained = true;
+            console.log('Model training completed and stored as trained.');
+
         })
         .catch(error => console.error('Error fetching training data:', error));
 }
 
-async function getTrainingDataFromCsv(pathToCsv) {
-    zeroCount = 0;
-    fourCount = 0;
-
-    return await fetch(pathToCsv)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.text();
-        })
-        .then(csvContent => {
-            console.log("CSV Content Loaded Successfully");
-            let allData = parseCSV(csvContent);
-            console.log("Parsed Data:", allData);
-
-            if (!allData || allData.length === 0) {
-                throw new Error("Parsed CSV data is empty or undefined");
-            }
-
-            // Filter to only keep columns 0 and 5 (ensure enough columns in row)
-            let filteredData = allData.map(row => [row[0], row[1]]);
-            console.log('Filtered Data:', filteredData);
-
-            let tableSize = filteredData.length;
-            console.log('Number Of Data Entries:', tableSize);
-
-            // Evenly split the data: 85% for training, 15% for testing
-            let trainDataSize = Math.floor(0.85 * tableSize);
-            let trainingData = [];
-            let testData = [];
-
-            for (let i = 0; i < tableSize; i++) {
-                // Evenly pick from both ends
-                if (i % 7 === 0) {
-                    testData.push(filteredData[i]);
-                } else {
-                    trainingData.push(filteredData[i]);
-                }
-            }
-
-            console.log('Training Data Size:', trainingData.length);
-            console.log('Test Data Size:', testData.length);
-
-            // Process each row in the training data and train the word lists
-            trainingData.forEach((row, index) => {
-                let label = parseInt(row[0], 10);
-
-                // Ignore invalid labels
-                if (label !== 0 && label !== 4) return;
-
-                if (label === 0) zeroCount++;
-                if (label === 4) fourCount++;
-
-                // Convert label: 4 -> positive, 0 -> negative
-                label = label === 4 ? 1 : 0;
-
-                let text = row[1];
-                // Vectorize text and update positive or negative word lists
-                vectorizeText(text, label);
-            });
-
-            console.log('Zero Count:', zeroCount);
-            console.log('Four Count:', fourCount);
-
-            console.log('Positive Words:', positiveWords);
-            console.log('Negative Words:', negativeWords);
-
-            // After training, test the model on the remaining 15%
-            for(let i = 0; i < trainingIterations; i++) {
-                testModel(testData);
-            }
-
-        })
-        .catch(error => console.error('Error fetching CSV file:', error));
-}
+// async function getTrainingDataFromCsv(pathToCsv) {
+//     zeroCount = 0;
+//     fourCount = 0;
+//
+//     return await fetch(pathToCsv)
+//         .then(response => {
+//             if (!response.ok) {
+//                 throw new Error(`HTTP error! status: ${response.status}`);
+//             }
+//             return response.text();
+//         })
+//         .then(csvContent => {
+//             console.log("CSV Content Loaded Successfully");
+//             let allData = parseCSV(csvContent);
+//             console.log("Parsed Data:", allData);
+//
+//             if (!allData || allData.length === 0) {
+//                 throw new Error("Parsed CSV data is empty or undefined");
+//             }
+//
+//             // Filter to only keep columns 0 and 5 (ensure enough columns in row)
+//             let filteredData = allData.map(row => [row[0], row[1]]);
+//             console.log('Filtered Data:', filteredData);
+//
+//             let tableSize = filteredData.length;
+//             console.log('Number Of Data Entries:', tableSize);
+//
+//             // Evenly split the data: 85% for training, 15% for testing
+//             let trainDataSize = Math.floor(0.85 * tableSize);
+//             let trainingData = [];
+//             let testData = [];
+//
+//             for (let i = 0; i < tableSize; i++) {
+//                 // Evenly pick from both ends
+//                 if (i % 7 === 0) {
+//                     testData.push(filteredData[i]);
+//                 } else {
+//                     trainingData.push(filteredData[i]);
+//                 }
+//             }
+//
+//             console.log('Training Data Size:', trainingData.length);
+//             console.log('Test Data Size:', testData.length);
+//
+//             // Process each row in the training data and train the word lists
+//             trainingData.forEach((row, index) => {
+//                 let label = parseInt(row[0], 10);
+//
+//                 // Ignore invalid labels
+//                 if (label !== 0 && label !== 4) return;
+//
+//                 if (label === 0) zeroCount++;
+//                 if (label === 4) fourCount++;
+//
+//                 // Convert label: 4 -> positive, 0 -> negative
+//                 label = label === 4 ? 1 : 0;
+//
+//                 let text = row[1];
+//                 // Vectorize text and update positive or negative word lists
+//                 vectorizeText(text, label);
+//             });
+//
+//             console.log('Zero Count:', zeroCount);
+//             console.log('Four Count:', fourCount);
+//
+//             console.log('Positive Words:', positiveWords);
+//             console.log('Negative Words:', negativeWords);
+//
+//             // After training, test the model on the remaining 15%
+//             for (let i = 0; i < trainingIterations; i++) {
+//                 testModel(testData);
+//             }
+//
+//         })
+//         .catch(error => console.error('Error fetching CSV file:', error));
+// }
 
 function testModel(testData) {
     console.log('Testing the model on the remaining 15% of the data...');
@@ -449,7 +714,7 @@ function tuneModel(text, trueLabel) {
             }
         } else if (trueLabel === 0) {  // Negative label
             if (negativeWords[word]) {
-                negativeWords[word] += 0.1;
+                negativeWords[word] += 0.2;
             }
             if (positiveWords[word]) {
                 positiveWords[word] = Math.max(positiveWords[word] - 0.2, 0);
@@ -742,7 +1007,7 @@ document.addEventListener('DOMContentLoaded', function () {
 document.addEventListener('DOMContentLoaded', function () {
     // Request the current video ID from the background script
     chrome.runtime.sendMessage({action: 'getVideoId'}, (response) => {
-        if(response.videoId) {
+        if (response.videoId) {
             const videoId = response.videoId;
 
             if (videoId) {
@@ -758,23 +1023,23 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-// Listener to handle messages from background.js
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === 'trainModel') {
-        console.log('Received message to train the model.');
-
-        // Trigger the model training logic
-        getTrainingDataFromCsvAndDatabase('trainingData/trainingData.csv')
-            .then(() => {
-                sendResponse({ modelTrained: true });
-                console.log('Model trained successfully.');
-            })
-            .catch((error) => {
-                console.error('Error during model training:', error);
-                sendResponse({ modelTrained: false });
-            });
-
-        // Keep the message channel open
-        return true;
-    }
-});
+// // Listener to handle messages from background.js
+// chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+//     if (message.action === 'trainModel') {
+//         console.log('Received message to train the model.');
+//
+//         // Trigger the model training logic
+//         getTrainingDataFromCsvAndDatabase('trainingData/trainingData.csv')
+//             .then(() => {
+//                 sendResponse({ modelTrained: true });
+//                 console.log('Model trained successfully.');
+//             })
+//             .catch((error) => {
+//                 console.error('Error during model training:', error);
+//                 sendResponse({ modelTrained: false });
+//             });
+//
+//         // Keep the message channel open
+//         return true;
+//     }
+// });

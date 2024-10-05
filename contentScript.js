@@ -3,11 +3,12 @@ let lastVideoId = null;
 let retryInterval = 1000; // Retry every 1 second
 
 // Call this when content script starts
-// initializeModel().then(() => {
-//     observeUrlChanges();  // Start observing changes
-// }).catch(() => {
-//     console.log('Sentiment analysis disabled until the model is trained.');
-// });
+initializeModel().then(() => {
+    observeUrlChanges();  // Start observing changes
+}).catch(() => {
+    console.log('Sentiment analysis disabled until the model is trained.');
+});
+
 
 
 async function sendCommentToDatabase(comment, sentiment) {
@@ -32,20 +33,43 @@ async function sendCommentToDatabase(comment, sentiment) {
     }
 }
 
+// Function to disable filter buttons during loading
+function disableFilterButtons() {
+    const filterButtons = document.querySelectorAll('#filter-buttons .btn');
+    filterButtons.forEach(button => {
+        button.disabled = true;
+        button.style.cursor = 'not-allowed';    // Change cursor to indicate non-clickable
+    });
+}
+
+// Function to enable filter buttons after loading completes
+function enableFilterButtons() {
+    const filterButtons = document.querySelectorAll('#filter-buttons .btn');
+    filterButtons.forEach(button => {
+        button.disabled = false;
+        button.style.backgroundColor = '';  // Restore button color
+        button.style.cursor = 'pointer';    // Restore cursor to pointer
+    });
+}
+
+
 // Function to initialize model training
 async function initializeModel() {
-    return new Promise((resolve, reject) => {
-        chrome.storage.local.get('isModelTrained', (result) => {
-            isModelTrained = result.isModelTrained || false;
-            if (isModelTrained) {
-                console.log('Model is already trained.');
-                resolve(true);
-            } else {
-                console.error('Model is not trained. Requesting training.');
-                reject(false);
-            }
+    const trained = await checkModelTrainedStatus();
+    if (trained) {
+        console.log('Model is already trained.');
+        return true;
+    } else {
+        console.log('Training the model...');
+        return getTrainingDataFromCsvAndDatabase("trainingData/trainingData.csv").then(() => {
+            isModelTrained = true;
+            console.log('Model trained successfully.');
+            return true;
+        }).catch(error => {
+            console.error('Error during model training:', error);
+            return false;
         });
-    });
+    }
 }
 
 // Wait for the model to be trained before proceeding with sentiment analysis
@@ -68,6 +92,19 @@ async function initializeModelAndStartSentiment() {
         //         reject(false);  // Reject the promise if training fails
         //     }
         // });
+    });
+}
+
+function checkModelTrainedStatus() {
+    return new Promise((resolve) => {
+        chrome.runtime.sendMessage({ action: 'checkModelTrained' }, (response) => {
+            if (response.isModelTrained) {
+                isModelTrained = true;
+                resolve(true);
+            } else {
+                resolve(false);
+            }
+        });
     });
 }
 
@@ -211,29 +248,29 @@ function getVideoIdFromUrl() {
     }
 }
 
-// Send video ID to the background script
+// // Send video ID to the background script
 const videoId = getVideoIdFromUrl();
-if (videoId) {
-    // Send message to background script to start sentiment analysis
-    chrome.runtime.sendMessage({action: 'getVideoId'}, (response) => {
-        const videoId = response.videoId;
-        if (videoId) {
-            // Fetch the sentiment analysis and inject the data into the YouTube page
-            // getTrainingDataFromCsvAndDatabase(chrome.runtime.getURL('trainingData/trainingData.csv'))
-            //     .then(() => {
-            fetchYoutubeCommentsVideoId(videoId).then((sentimentData) => {
-                const {overallSentiment, positivityPercentage, individualCommentData} = sentimentData;
-                injectSentimentIntoPage(overallSentiment, positivityPercentage, individualCommentData);
-            })
-                // })
-                .catch(error => {
-                    console.error('Error fetching CSV file:', error);
-                });
-        } else {
-            console.error('No video ID found in the response.');
-        }
-    });
-}
+// if (videoId) {
+//     // Send message to background script to start sentiment analysis
+//     chrome.runtime.sendMessage({action: 'getVideoId'}, (response) => {
+//         const videoId = response.videoId;
+//         if (videoId) {
+//             // Fetch the sentiment analysis and inject the data into the YouTube page
+//             // getTrainingDataFromCsvAndDatabase(chrome.runtime.getURL('trainingData/trainingData.csv'))
+//             //     .then(() => {
+//             fetchYoutubeCommentsVideoId(videoId).then((sentimentData) => {
+//                 const {overallSentiment, positivityPercentage, individualCommentData} = sentimentData;
+//                 injectSentimentIntoPage(overallSentiment, positivityPercentage, individualCommentData);
+//             })
+//                 // })
+//                 .catch(error => {
+//                     console.error('Error fetching CSV file:', error);
+//                 });
+//         } else {
+//             console.error('No video ID found in the response.');
+//         }
+//     });
+// }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'startSentimentAnalysis') {
@@ -429,6 +466,7 @@ async function fetchYoutubeCommentsVideoId(inputVideoId) {
     const loadingMessage = document.getElementById('loading-message');
 
     // Ensure the loading message is visible and the container is hidden initially
+    disableFilterButtons();
     loadingMessage.style.display = 'block';
     commentsContainer.style.display = 'none';
 
@@ -481,19 +519,16 @@ async function fetchYoutubeCommentsVideoId(inputVideoId) {
 
         // Initially display all comments
         displayFilteredComments(allCommentsData);
+        enableFilterButtons();
     });
 }
 
 async function modifyCommentSection(overallSentiment, overallSentimentProbability, positivityPercentage) {
-    // Create a new paragraph element to display overall sentiment
-    if (document.querySelector('#sentimentParagraph')) {
-        return;
-    }
-
     let positiveCount = 0;
     let neutralCount = 0;
     let negativeCount = 0;
 
+    // Count the number of positive, neutral, and negative comments
     allCommentsData.forEach(commentData => {
         if (commentData.sentiment === 'Positive') {
             positiveCount++;
@@ -504,51 +539,71 @@ async function modifyCommentSection(overallSentiment, overallSentimentProbabilit
         }
     });
 
+    // Check if the sentimentParagraph already exists
+    let sentimentParagraph = document.querySelector('#sentimentParagraph');
 
-    // Create a new paragraph element to display overall sentiment
-    const sentimentParagraph = document.createElement('p');
-    sentimentParagraph.id = 'sentimentParagraph';
+    if (sentimentParagraph) {
+        // If it exists, update the content with new stats
+        sentimentParagraph.innerHTML = `<span style="color:white;">Overall Comment Sentiment: </span>`;
 
-    sentimentParagraph.innerHTML = `<span style="color:white;">Overall Comment Sentiment: </span>`;
+        if (overallSentiment.includes('Positive')) {
+            sentimentParagraph.innerHTML += `<span style="color:green;">${overallSentiment} (${(overallSentimentProbability).toFixed(2)}% positivity rating) 😄</span>`;
+        } else if (overallSentiment.includes('Negative')) {
+            sentimentParagraph.innerHTML += `<span style="color:red;">${overallSentiment} (${(overallSentimentProbability).toFixed(2)}% positivity rating) 😡</span>`;
+        } else {
+            sentimentParagraph.innerHTML += `<span style="color:gray;">${overallSentiment} (${(overallSentimentProbability).toFixed(2)}% positivity rating) 😐</span>`;
+        }
 
-
-    if (overallSentiment.includes('Positive')) {
-        sentimentParagraph.innerHTML += `<span style="color:green;">${overallSentiment} (${(overallSentimentProbability).toFixed(2)}% positivity rating) 😄</span>`;
-    } else if (overallSentiment.includes('Negative')) {
-        sentimentParagraph.innerHTML += `<span style="color:red;">${overallSentiment} (${(overallSentimentProbability).toFixed(2)}% positivity rating) 😡</span>`;
+        sentimentParagraph.innerHTML += `
+            <div style="font-size: 14px; color: #ccc; margin-top: 8px;">
+            <p>Positive Comments: ${positiveCount}</p>
+            <p>Neutral Comments: ${neutralCount}</p>
+            <p>Negative Comments: ${negativeCount}</p>
+            </div>
+        `;
     } else {
-        sentimentParagraph.innerHTML += `<span style="color:gray;">${overallSentiment} (${(overallSentimentProbability).toFixed(2)}% positivity rating) 😐</span>`;
+        // If it doesn't exist, create a new paragraph element
+        sentimentParagraph = document.createElement('p');
+        sentimentParagraph.id = 'sentimentParagraph';
+
+        sentimentParagraph.innerHTML = `<span style="color:white;">Overall Comment Sentiment: </span>`;
+
+        if (overallSentiment.includes('Positive')) {
+            sentimentParagraph.innerHTML += `<span style="color:green;">${overallSentiment} (${(overallSentimentProbability).toFixed(2)}% positivity rating) 😄</span>`;
+        } else if (overallSentiment.includes('Negative')) {
+            sentimentParagraph.innerHTML += `<span style="color:red;">${overallSentiment} (${(overallSentimentProbability).toFixed(2)}% positivity rating) 😡</span>`;
+        } else {
+            sentimentParagraph.innerHTML += `<span style="color:gray;">${overallSentiment} (${(overallSentimentProbability).toFixed(2)}% positivity rating) 😐</span>`;
+        }
+
+        sentimentParagraph.innerHTML += `
+            <div style="font-size: 14px; color: #ccc; margin-top: 8px;">
+            <p>Positive Comments: ${positiveCount}</p>
+            <p>Neutral Comments: ${neutralCount}</p>
+            <p>Negative Comments: ${negativeCount}</p>
+            </div>
+        `;
+
+        // Style the paragraph (optional)
+        sentimentParagraph.style.fontSize = '20px';
+        sentimentParagraph.style.color = overallSentiment === 'Positive' ? 'green' : overallSentiment === 'Negative' ? 'red' : 'gray';
+        sentimentParagraph.style.fontWeight = 'bold';
+        sentimentParagraph.style.margin = '10px 0';
+        sentimentParagraph.style.textAlign = 'center';
+        sentimentParagraph.style.backgroundColor = '#333';
+        sentimentParagraph.style.padding = '15px';
+        sentimentParagraph.style.margin = '20px 0';
+        sentimentParagraph.style.borderRadius = '8px';
+        sentimentParagraph.style.color = '#ffa500'; // Orange text for consistency
+        sentimentParagraph.style.fontWeight = 'bold';
+        sentimentParagraph.style.textAlign = 'center';
+        sentimentParagraph.style.fontSize = '18px';
+        sentimentParagraph.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.3)';
+
+        // Insert the new paragraph at the top of the page (before the first child of the body)
+        const body = document.querySelector('.container');
+        body.insertBefore(sentimentParagraph, body.firstChild);
     }
-
-    sentimentParagraph.innerHTML += `
-        <div style="font-size: 14px; color: #ccc; margin-top: 8px;">
-        <p>Positive Comments: ${positiveCount}</p>
-        <p>Neutral Comments: ${neutralCount}</p>
-        <p>Negative Comments: ${negativeCount}</p>
-        </div>
-    `;
-
-
-    // Style the paragraph (optional)
-    sentimentParagraph.style.fontSize = '20px';
-    sentimentParagraph.style.color = overallSentiment === 'Positive' ? 'green' : overallSentiment === 'Negative' ? 'red' : 'gray';
-    sentimentParagraph.style.fontWeight = 'bold';
-    sentimentParagraph.style.margin = '10px 0';
-    sentimentParagraph.style.textAlign = 'center';
-    sentimentParagraph.style.backgroundColor = '#333';
-    sentimentParagraph.style.padding = '15px';
-    sentimentParagraph.style.margin = '20px 0';
-    sentimentParagraph.style.borderRadius = '8px';
-    sentimentParagraph.style.color = '#ffa500'; // Orange text for consistency
-    sentimentParagraph.style.fontWeight = 'bold';
-    sentimentParagraph.style.textAlign = 'center';
-    sentimentParagraph.style.fontSize = '18px';
-    sentimentParagraph.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.3)';
-
-
-    // Insert the paragraph at the top of the page (before the first child of the body)
-    const body = document.querySelector('.container');
-    body.insertBefore(sentimentParagraph, body.firstChild);
 }
 
 //Function to observe the loading of the comments section (optional)
@@ -633,32 +688,6 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
-// chrome.runtime.onInstalled.addListener(() => {
-//     console.log("Extension installed/updated, starting model training...");
-//     trainModel();  // Train model once during installation or update
-// });
-
-// chrome.runtime.onStartup.addListener(() => {
-//     console.log("Chrome started, training the model...");
-//     trainModel();  // Train model on Chrome startup
-// });
-
-// Listener to respond to content scripts about model training status
-// chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-//     if (message.action === 'checkModelTraining') {
-//         sendResponse({modelTrained: isModelTrained});
-//     }
-//
-//     if (message.action === 'trainModel') {
-//         if (!isModelTrained) {
-//             trainModel();  // If model isn't trained yet, start the training process
-//             sendResponse({modelTrained: false});
-//         } else {
-//             sendResponse({modelTrained: true});
-//         }
-//     }
-// });
-
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'trainModel') {
         console.log('Received message to train the model.');
@@ -679,6 +708,67 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
         return true;  // Keep the message channel open until response is sent
     }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    const retrainButton = document.getElementById('retrain-button');
+    const filterButtons = document.querySelectorAll('.btn'); // Assuming all buttons have the class 'btn'
+    const loadingMessage = document.getElementById('loading-message');
+    const commentsContainer = document.getElementById('commentsContainer');
+
+    // Function to disable buttons and show the loading message
+    function disableButtonsAndShowLoading() {
+        filterButtons.forEach(button => {
+            button.disabled = true;
+            // button.style.backgroundColor = '#ccc'; // Grey out the buttons
+            button.style.cursor = 'not-allowed';   // Change cursor to indicate non-clickable
+        });
+        loadingMessage.style.display = 'block';  // Show loading message
+        commentsContainer.style.display = 'none'; // Hide comments during loading
+    }
+
+    // Function to enable buttons and hide the loading message
+    function enableButtonsAndHideLoading() {
+        filterButtons.forEach(button => {
+            button.disabled = false;
+            button.style.backgroundColor = '';    // Restore the original button color
+            button.style.cursor = 'pointer';      // Restore pointer cursor
+        });
+        loadingMessage.style.display = 'none';   // Hide loading message
+        commentsContainer.style.display = 'block'; // Show comments after loading
+    }
+
+    // Event listener for retraining model
+    retrainButton.addEventListener('click', () => {
+        disableButtonsAndShowLoading();  // Disable buttons and show loading
+
+        // Send a message to trigger model retraining
+        chrome.runtime.sendMessage({ action: 'trainModel' }, (response) => {
+            if (response && response.modelTrained) {
+                console.log('Model retrained successfully.');
+
+                // Once retraining is done, fetch comments again
+                chrome.runtime.sendMessage({ action: 'getVideoId' }, (response) => {
+                    if (response.videoId) {
+                        fetchYoutubeCommentsVideoId(response.videoId)
+                            .then(() => {
+                                enableButtonsAndHideLoading();  // Re-enable buttons and hide loading
+                            })
+                            .catch(error => {
+                                console.error('Error fetching comments:', error);
+                                enableButtonsAndHideLoading();  // Re-enable buttons even on error
+                            });
+                    } else {
+                        console.error('No video ID found.');
+                        enableButtonsAndHideLoading();  // Re-enable buttons even if no video ID is found
+                    }
+                });
+            } else {
+                console.error('Model retraining failed.');
+                enableButtonsAndHideLoading();  // Re-enable buttons even if retraining failed
+            }
+        });
+    });
 });
 
 
